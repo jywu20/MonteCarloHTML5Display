@@ -62,6 +62,6 @@ class MPIsing {
     }
 
     magnetization() {
-        return sum(this.configuration);
+        return sum(this.configuration) / this.site_list.length;
     }
 }

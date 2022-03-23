@@ -1,8 +1,8 @@
-const T_min = 0.0;
-const T_max = 4.0;
+const T_min = 0.001;
+const T_max = 4.001;
 const h_min = 0.0;
-const h_max = 4.0;
-const T_sampling_num = 50;
+const h_max = 2.0;
+const T_sampling_num = 100;
 const h_sampling_num = 50;
 
 const side_length = 10;
@@ -17,20 +17,26 @@ const h_range = new Array(h_sampling_num).fill().map((_, i) => h_min + delta_h *
 
 const {site_list, inverse_list, neighbor_list} = square_lattice_2D_pbc(side_length);
 
+let T_idx = 0, h_idx = 0;
+let pause = false;
+
 let canvas = document.getElementById("myCanvas"),
     context = canvas.getContext("2d");
 
-// Canvas background color being completely black 
-context.save();
-context.fillStyle = "rgba(0,0,0,1.0)";
-context.fillRect(0, 0, canvas.width, canvas.height);
-context.restore();
+function resetDisplay() {
+    T_idx = 0;
+    h_idx = 0;
+    // Canvas background color being completely black 
+    context.save();
+    context.fillStyle = "rgba(0,0,0,1.0)";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.restore();
+}
 
 const single_point_width = canvas.width / T_sampling_num;
 const single_point_height = canvas.height / h_sampling_num;
 
-let T_idx = 0, h_idx = 0;
-let pause = false;
+resetDisplay();
 
 // Animation: plotting the phase diagram
 function plotPhaseDiagramPoint() {
@@ -40,7 +46,7 @@ function plotPhaseDiagramPoint() {
         const h = h_min + delta_h * h_idx;
 
         // Heating up
-        ising_config = new MPIsing(beta, beta * h, site_list, inverse_list, neighbor_list);
+        ising_config = new MPIsing(- beta, beta * h, site_list, inverse_list, neighbor_list);
         for (let heat_count = 0; heat_count < heating_time; heat_count++) {
             ising_config.update();
         }
@@ -55,7 +61,7 @@ function plotPhaseDiagramPoint() {
 
         // Paint the corresponding box in the canvas according to the MC simulation result
         context.save();
-        // m=0 corresponds to blue, and m=1 corresponds to yellow
+        // m=1 corresponds to blue, and m=0 corresponds to yellow
         const r_value_0 = 0;
         const g_value_0 = 0;
         const b_value_0 = 255;
@@ -73,7 +79,7 @@ function plotPhaseDiagramPoint() {
         );
         context.restore();
 
-        console.log(`Complete computation of T = ${T}, h = ${h}`);
+        console.log(`Complete computation of T = ${T}, h = ${h}, average magnetization = ${magnetization_avg}`);
 
         h_idx ++;
         if (h_idx == h_range.length) {
@@ -90,8 +96,7 @@ function plotPhaseDiagramPoint() {
 const start_phase_diagram = document.getElementById("start_phase_diagram");
 
 start_phase_diagram.addEventListener("click", (ev) => {
-    cancelAnimationFrame(plotPhaseDiagramPoint);
-    T_idx = 0;
-    h_idx = 0;
+    // cancelAnimationFrame(plotPhaseDiagramPoint);
+    resetDisplay();
     plotPhaseDiagramPoint();
 });
