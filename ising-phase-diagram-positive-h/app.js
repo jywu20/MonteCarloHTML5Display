@@ -38,6 +38,20 @@ const single_point_height = canvas.height / h_sampling_num;
 
 resetDisplay();
 
+const r_value_0 = 0;
+const g_value_0 = 0;
+const b_value_0 = 255;
+const r_value_1 = 255;
+const g_value_1 = 255;
+const b_value_1 = 0;
+
+function magnetization_to_color(magnetization) {
+    const r_value_current = r_value_0 + magnetization * (r_value_1 - r_value_0);
+    const g_value_current = g_value_0 + magnetization * (g_value_1 - g_value_0);
+    const b_value_current = b_value_0 + magnetization * (b_value_1 - b_value_0);
+    return { r_value_current, g_value_current, b_value_current };
+}
+
 // Animation: plotting the phase diagram
 function plotPhaseDiagramPoint() {
     if (! pause) {
@@ -62,15 +76,7 @@ function plotPhaseDiagramPoint() {
         // Paint the corresponding box in the canvas according to the MC simulation result
         context.save();
         // m=1 corresponds to blue, and m=0 corresponds to yellow
-        const r_value_0 = 0;
-        const g_value_0 = 0;
-        const b_value_0 = 255;
-        const r_value_1 = 255;
-        const g_value_1 = 255;
-        const b_value_1 = 0;
-        const r_value_current = r_value_0 + magnetization_avg * (r_value_1 - r_value_0);
-        const g_value_current = g_value_0 + magnetization_avg * (g_value_1 - g_value_0);
-        const b_value_current = b_value_0 + magnetization_avg * (b_value_1 - b_value_0);
+        const { r_value_current, g_value_current, b_value_current } = magnetization_to_color(magnetization_avg);
         context.fillStyle = `rgba(${r_value_current},${g_value_current},${b_value_current},1.0)`;
         context.fillRect(
             T_idx * single_point_width, 
