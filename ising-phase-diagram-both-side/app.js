@@ -5,7 +5,7 @@ const h_max = 2.0;
 const T_sampling_num = 100;
 const h_sampling_num = 100;
 
-const side_length = 10;
+const side_length = 30;
 const heating_time = 1000;
 const sampling_time = 3000;
 
