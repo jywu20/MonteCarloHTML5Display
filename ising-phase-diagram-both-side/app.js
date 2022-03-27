@@ -33,10 +33,21 @@ function resetDisplay() {
     context.restore();
 }
 
+resetDisplay();
+
 const single_point_width = canvas.width / T_sampling_num;
 const single_point_height = canvas.height / h_sampling_num;
 
-resetDisplay();
+const real_Tc = 2.2691853142;
+
+function plot_theoretical_lines() {
+    context.beginPath();
+    context.setLineDash([5, 15]);
+    x_coordinate = real_Tc / (T_max - T_min) * canvas.width;
+    context.moveTo(x_coordinate, 0);
+    context.lineTo(x_coordinate, canvas.height);
+    context.stroke();
+}
 
 const r_value_0 = 0;
 const g_value_0 = 0;
@@ -104,6 +115,7 @@ function plotPhaseDiagramPoint() {
         }
         if (T_idx == T_range.length) {
             pause = true;
+            plot_theoretical_lines();
         }
         requestAnimationFrame(plotPhaseDiagramPoint);
     }
