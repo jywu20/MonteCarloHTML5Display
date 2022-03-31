@@ -1,0 +1,56 @@
+\documentclass[UTF8]{ctexbeamer}
+\usepackage{physics}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{mathdots}
+\usepackage{yhmath}
+\usepackage{cancel}
+\usepackage{color}
+\usepackage{siunitx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{amssymb}
+\usepackage{textcomp, gensymb}
+\usepackage{tabularx}
+\usepackage{extarrows}
+\usepackage{booktabs}
+\usetikzlibrary{fadings}
+\usetikzlibrary{patterns}
+\usetikzlibrary{shadows.blur}
+\usetikzlibrary{shapes}
+\usepackage{listings}
+\usepackage{hyperref}
+
+%Information to be included in the title page:
+\title{二维正方晶格伊辛模型的蒙特卡洛模拟}
+\author{吴晋渊 18307110155}
+\institute{复旦大学物理学系}
+\date{2021}
+
+\usetheme{Madrid}
+
+\newcommand{\concept}[1]{\textbf{#1}}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Finite size scaling}
+
+\begin{itemize}
+    \item 一个边长为$L$，正处在其伪临界点$T = T_\text{c}(L)$处的系统等价于一个边长无限长，\emph{关联长度}为$L$，温度为$T_\text{c}$的系统。 % 这个假设是足够强了，可以推导出我们想要的data collapsing公式，问题是它是不是真的是对的
+    \item 于是将
+    \[
+        \xi \propto \abs*{t}^{- \nu}
+    \]
+    中的$\xi$替换成$L$得到
+    \begin{equation}
+        L \propto \abs*{T_\text{c}(L) - T_\text{c}(L=\infty)}^{-\nu} .
+    \end{equation}
+    \item 同样，在
+\end{itemize}    
+
+\end{frame}
+
+\end{document}
