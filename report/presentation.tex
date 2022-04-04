@@ -1,6 +1,6 @@
 \documentclass[UTF8]{ctexbeamer}
 \usepackage{physics}
-\usepackage{amsmath}
+\usepackage{amsmath, amssymb, mathtools}
 \usepackage{tikz}
 \usepackage{mathdots}
 \usepackage{yhmath}
@@ -36,20 +36,53 @@
 \frame{\titlepage}
 
 \begin{frame}
-\frametitle{Finite size scaling}
+\frametitle{Finite size scaling and data collapsing}
+
+有限大小的系统中可观测量的行为
 
 \begin{itemize}
-    \item 一个边长为$L$，正处在其伪临界点$T = T_\text{c}(L)$处的系统等价于一个边长无限长，\emph{关联长度}为$L$，温度为$T_\text{c}$的系统。 % 这个假设是足够强了，可以推导出我们想要的data collapsing公式，问题是它是不是真的是对的
-    \item 于是将
+    \item 独立参数：体系边长$L$和归一化温度$t = (T - T_\text{c}) / T_\text{c}$；等价地说，$L$和（$L \to \infty$时的）关联长度$\xi \propto \abs*{t}^{- \nu}$
+    \item $L$足够长，系统足够接近临界点：正比于“系统中各个自由度求和”的物理量$Q \sim \int \dd[d]{\vb*{r}} \phi^n (\grad{\phi})^m$也具有关于$L$的标度不变性：
     \[
-        \xi \propto \abs*{t}^{- \nu}
+        Q(t, L) = L^\sigma f(\xi / L) = L^{\sigma} f(\abs*{t}^{- \nu} / L) = L^\sigma g(\underbrace{t L^{1 / \nu}}_{= (\xi / L)^{- 1 / \nu} \coloneqq x}).
     \]
-    中的$\xi$替换成$L$得到
+    \item $L \to \infty$时$Q \sim \abs*{t}^{- \kappa}$，于是只能$g(t L^{1 / \nu}) \sim (t L^{1 / \nu})^{- \kappa}$；由于$Q$此时没有依赖$L$，只能是$\sigma = \kappa / \nu$。于是
     \begin{equation}
-        L \propto \abs*{T_\text{c}(L) - T_\text{c}(L=\infty)}^{-\nu} .
+        Q(t, L) = L^{\kappa / \nu} g(t L^{1 / \nu}).
     \end{equation}
-    \item 同样，在
 \end{itemize}    
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Finite size scaling and data collapsing}
+
+有限大小的系统的伪临界点
+
+\begin{itemize}
+    \item $L$有限时$Q$在$t=0$时并不出现真正的不连续性
+    \item 单次蒙卡模拟时固定$L$扫描$t$：$Q(t, L)$在
+    \begin{equation}
+        t = t_\text{max}, \quad t_\text{max} L^{1 / \nu} = x_\text{max}
+    \end{equation}
+    时最大（或者取零，例如$Q$为磁化强度，不发散时），其中$x_\text{max}$让$g(x)$最大。
+    \item $L$固定，$g(x)$最大则$Q(t, L)$最大，为
+    \begin{equation}
+        Q_\text{max}(L) \sim L^{\kappa / \nu}, \quad t_\text{max} L^{1 / \nu} \sim 1 \Rightarrow t_\text{max} \sim L^{- 1 / \nu}.
+    \end{equation}
+    \item 因此可以将固定$L$时$Q(t = (T - T_\text{c}) / T_\text{c}, L)$取最大值的$T$当成“伪临界点”，其上的scaling关系是关于$L$而不是关于$\xi$的。拟合
+    \begin{equation}
+        T = T_\text{c} + \alpha L^{- 1 / \nu}
+    \end{equation}
+    可以得到$T_\text{c}$和$\nu$两个参数。
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{实现}
+
+    
 
 \end{frame}
 

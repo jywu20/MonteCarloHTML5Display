@@ -1,22 +1,56 @@
 <!DOCTYPE html>
+<!-- KaTeX requires the use of the HTML5 doctype. Without it, KaTeX may not render properly -->
 <html>
     <head>
-        <meta charset="utf8">
+        <meta charset="UTF-8">
 
-        <title>二维正方晶格伊辛模型的一级相变和二级相变</title>
+        <link rel="stylesheet" href="./main.css">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.3/dist/katex.min.css" integrity="sha384-KiWOvVjnN8qwAZbuQyWDIbfCLFhLXNETzBQjA/92pIowpC0d2O3nppDGQVgwd2nB" crossorigin="anonymous">
+
+        <!-- The loading of KaTeX is deferred to speed up page rendering -->
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.3/dist/katex.min.js" integrity="sha384-0fdwu/T/EQMsQlrHCCHoH10pkPLlKA1jL5dFyUOvB3lfeT2540/2g6YgSi2BL14p" crossorigin="anonymous"></script>
+
+        <!-- To automatically render math in text elements, include the auto-render extension: -->
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.3/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous" id="auto_render_script"></script>
+
+        <title>扫描二维正方晶格伊辛模型的相图</title>
     </head>
-
     <body>
-        <h2>伊辛模型</h2>
-        <canvas id="myCanvas" width="600" height="600"></canvas>
+        <h1>二维正方晶格伊辛模型的一级相变和二级相变</h1>
 
-        <button id="start_phase_diagram">开始扫描相图</button>
+        <canvas id="phase_diagram" width="500" height="500"></canvas>
+
+        <div id="control_panel">
+            在这个页面上，你可以扫描
+            $$
+            H = - J \sum_{\lang \boldsymbol{i}, \boldsymbol{j} \rang} \sigma_{\boldsymbol{i}} \sigma_{\boldsymbol{j}} - h \sum_{\boldsymbol{i}} \sigma_{\boldsymbol{i}}
+            $$
+            关于$h$（我们固定$J=1$）和系统温度$T$的相图；$T$为横坐标，$h$为纵坐标。伊辛模型的相图和水的液、气相变的相图类似：有两个被一级相变隔开的相，沿着一级相变点有一个二级相变，过了二级相变点之后，两相融合。
+            二级相变点的理论值为：$J = 1$时，$T_\text{c} = 2.2691853142$。扫描完成后，理论$T_\text{c}$会被用虚线标记出来。
+            可以调节系统边长$L$，观察实际上看到的二级相变点和$L \to \infty$时的理论结果之间的关系。
+            <br>
+            <label for="lattice_size">$L$</label>
+            <input type="text" id="lattice_size" name="lattice_size" value="30"><br>
+            <button id="start_phase_diagram">开始扫描相图</button>
+        </div>
 
         <script src="math-js-10.4.0.js"></script>
         <script src="utils.js"></script>
         <script src="ising-core.js"></script>
         <script src="lattice.js"></script>
-        <script src="show_configuration.js"></script>
         <script src="app.js"></script>
+
+        <script defer>
+            document.getElementById("auto_render_script").addEventListener("load", () => {
+                renderMathInElement(document.body, {delimiters: [
+                            {left: "$$", right: "$$", display: true},
+                            {left: "\\[", right: "\\]", display: true},
+                            {left: "$", right: "$", display: false},
+                            {left: "\\(", right: "\\)", display: false}
+                        ]
+                    });
+            });
+        </script>
     </body>
 </html>

@@ -1,0 +1,14 @@
+body {
+    padding: 2cm;
+}
+
+#control_panel {
+    width: 300pt;
+    float: left;
+    margin-left: 1cm;
+    text-align: center;
+}
+
+#phase_diagram {
+    float: left;
+}

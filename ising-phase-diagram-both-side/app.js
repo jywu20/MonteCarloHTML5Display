@@ -5,7 +5,7 @@ const h_max = 2.0;
 const T_sampling_num = 100;
 const h_sampling_num = 100;
 
-const side_length = 30;
+let side_length = 30;
 const heating_time = 1000;
 const sampling_time = 3000;
 
@@ -20,7 +20,7 @@ const {site_list, inverse_list, neighbor_list} = square_lattice_2D_pbc(side_leng
 let T_idx = 0, h_idx = 0;
 let pause = false;
 
-let canvas = document.getElementById("myCanvas"),
+let canvas = document.getElementById("phase_diagram"),
     context = canvas.getContext("2d");
 
 function resetDisplay() {
@@ -122,8 +122,11 @@ function plotPhaseDiagramPoint() {
 }
 
 const start_phase_diagram = document.getElementById("start_phase_diagram");
+const lattice_size_input = document.getElementById("lattice_size");
 
 start_phase_diagram.addEventListener("click", (ev) => {
+    side_length = parseInt(lattice_size_input.value);
+    lattice_size_input.value = side_length;
     // cancelAnimationFrame(plotPhaseDiagramPoint);
     resetDisplay();
     plotPhaseDiagramPoint();
