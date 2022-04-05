@@ -73,6 +73,51 @@ Ts = [
 ts = (Ts .- T_c) / T_c
 
 p = Axis([
+        Plots.Linear(ts * 20^(1 / ν), χ_L_20 * 20^(- γ / ν), onlyMarks = true, mark = "o", legendentry = L"L=20"),
+        Plots.Linear(ts * 30^(1 / ν), χ_L_30 * 30^(- γ / ν), onlyMarks = true, mark = "o", legendentry = L"L=30"),
+        Plots.Linear(ts * 40^(1 / ν), χ_L_40 * 40^(- γ / ν), onlyMarks = true, mark = "o", legendentry = L"L=40"),
+        Plots.Linear(ts * 50^(1 / ν), χ_L_50 * 50^(- γ / ν), onlyMarks = true, mark = "o", legendentry = L"L=50"),
+    ],
+    xlabel = L"t L^{1 / \nu}",
+    ylabel = L"\chi L^{- \gamma / \nu}",
+    style = "axis background/.style={fill=white}",
+    legendStyle = "draw=none",
+    legendPos="north west"
+)
+
+working_path = "D:\\Projects\\Modern Physics Experiments\\HTML5\\ising-data-collapsing\\"
+name = "ising-data-collapsing-run-1.pdf"
+save(working_path * name, p)
+
+##
+
+T_c = 2.2691853
+γ = 7 / 4
+ν = 1
+
+Ts = [
+    2, 2.05, 2.1, 2.15, 2.2, 2.25, 2.3, 2.35, 2.4
+]
+
+χ_L_20 = [
+    0.47, 1, 1.21, 1.08, 3.2, 4.48, 9.23, 10.25, 8.5
+]
+
+χ_L_30 = [
+    0.42, 0.51, 0.95, 1.81, 2.83, 8.41, 16.4, 16.16, 14.46
+]
+
+χ_L_40 = [
+    0.35, 0.52, 1.09, 2.16, 3.46, 12.93, 25.67, 30.62, 19.36
+]
+
+χ_L_50 = [
+    0.37, 0.52, 0.83, 1.69, 3.01, 41.69, 40.51, 36.11, 17.07
+]
+
+ts = (Ts .- T_c) / T_c
+
+p = Axis([
         Plots.Linear(ts * 20^(1 / ν), χ_L_20 * 20^(- γ / ν), onlyMarks = true, mark = "o"),
         Plots.Linear(ts * 30^(1 / ν), χ_L_30 * 30^(- γ / ν), onlyMarks = true, mark = "o"),
         Plots.Linear(ts * 40^(1 / ν), χ_L_40 * 40^(- γ / ν), onlyMarks = true, mark = "o"),
@@ -84,5 +129,5 @@ p = Axis([
 )
 
 working_path = "D:\\Projects\\Modern Physics Experiments\\HTML5\\ising-data-collapsing\\"
-name = "ising-data-collapsing-run-1.pdf"
+name = "ising-data-collapsing-run-2.pdf"
 save(working_path * name, p)

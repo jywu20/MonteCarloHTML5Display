@@ -7,12 +7,12 @@ T_min = 2.0
 T_max = 2.4
 Ts = T_min : ΔT : T_max
 
-heating_up_time = 2000
+heating_up_time = 5000
 recording_time = 5000
 magnetization_record = zeros(recording_time)
 
 working_path = "D:\\Projects\\Modern Physics Experiments\\HTML5\\ising-data-collapsing\\"
-name = "finite-size-scaling-data-1.csv"
+name = "finite-size-scaling-data-2.csv"
 
 open(working_path * name, "w") do file
     println(file, "L, T, m, χ")

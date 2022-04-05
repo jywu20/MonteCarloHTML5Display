@@ -21,6 +21,8 @@
 \usepackage{listings}
 \usepackage{hyperref}
 
+\DeclareMathOperator{\ee}{e}
+
 %Information to be included in the title page:
 \title{二维正方晶格伊辛模型的蒙特卡洛模拟}
 \author{吴晋渊 18307110155}
@@ -34,6 +36,166 @@
 \begin{document}
 
 \frame{\titlepage}
+
+\begin{frame}
+\frametitle{二维正方晶格伊辛模型}
+
+伊辛模型
+\begin{equation}
+    H[\sigma] = - J \sum_{\langle \vb*{i}, \vb*{j} \rangle} \sigma_{\vb*{i}} \sigma_{\vb*{j}} - h \sum_{\vb*{i}} \sigma_{\vb*{i}}, \quad Z = \sum_\sigma \ee^{- \beta H[\sigma]}
+\end{equation}    
+\begin{itemize}
+    \item 最为著名的磁学模型：简洁地重现了铁磁序、顺磁序、居里点
+    \item 可能的自旋构型随着体系边长$L$增大，指数增大；最常出现的那些态无法一眼辨认出来
+    \item 难以解析研究（二维正方晶格上的解析解较晚才得到）——实际上，一开始伊辛模型被认为没有相变
+    \item 需要可视化自旋构型
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Metropolis方法更新自旋构型}
+
+Metropolis方法
+\begin{itemize}
+    \item 马尔可夫链蒙特卡洛（MCMC）：构建马尔可夫过程，使得收敛后的概率分布是我们需要的分布
+    \item 只需要满足   
+    \begin{itemize}
+        \item 细致平衡条件
+        \begin{equation}
+            p(\mathcal{C}) p(\mathcal{C} \to \mathcal{D}) = p(\mathcal{D}) p(\mathcal{D} \to \mathcal{C})
+        \end{equation} 
+        \item 各态历经
+    \end{itemize}
+    平衡时$\mathcal{C}$出现的概率就是$p(\mathcal{C})$
+    \item 设$\mathcal{C}$和$\mathcal{D}$只差了一个自旋，$H[\mathcal{C}] > H[\mathcal{D}]$
+    \begin{itemize}
+        \item 可以取$p(\mathcal{C} \to \mathcal{D}) = 1$, 
+        \begin{equation}
+            p(\mathcal{D} \to \mathcal{C}) = \ee^{- \beta (H[\mathcal{C}] - H[\mathcal{D}])} \eqcolon \text{accept rate},
+        \end{equation}
+        收敛时概率即为平衡态统计的概率。
+        \item 统一处理：若0到1之间的随机数小于accept rate就翻转
+    \end{itemize} 
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Metropolis方法更新自旋构型}
+
+显含格点$\vb*{i}$的那部分能量：$H = - J \sum_{\langle \vb*{i}, \vb*{j} \rangle} \sigma_{\vb*{j}} - h \sigma_{\vb*{i}} $
+
+\begin{center}
+    \input{flip-one-site.tex} 
+\end{center}   
+
+于是取
+\begin{equation}
+    \text{accept rate} = \frac{P_\text{after}}{P_\text{before}} = \ee^{- 2 J \sum_{\langle \vb*{i}, \vb*{j} \rangle} \sigma_{\vb*{j}} - 2 h \sigma_{\vb*{i}} }.
+\end{equation}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{演示1：展示自旋构型}
+
+访问\texttt{ising-phase-plot-configuration/index.html}
+
+\begin{center}
+    \includegraphics[width=\textwidth]{ising-phase-plot-configuration.PNG}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{演示1：展示自旋构型}
+
+$L=100$，观察不同温度下的构型：
+\begin{itemize}
+    \item $T=1.5$是铁磁相，几乎所有自旋均向下，只有零星涨落
+\end{itemize}
+
+\begin{center}
+    \includegraphics[width=0.5\textwidth]{{T=1.5-L=100-h=0}.png}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{演示1：展示自旋构型}
+    
+    $L=100$，观察不同温度下的构型：
+    \begin{itemize}
+        \item $T=3.5$是顺磁相，向上和向下的自旋散乱分布（虽然由于铁磁性相互作用，还是形成一定团簇）
+    \end{itemize}
+    
+    \begin{center}
+        \includegraphics[width=0.5\textwidth]{{T=3.5-L=100-h=0}.png}
+    \end{center}
+    
+\end{frame}
+
+\begin{frame}
+    \frametitle{演示1：展示自旋构型}
+    
+    $L=100$，观察不同温度下的构型：
+    \begin{itemize}
+        \item $T=2.26 \approx T_\text{c}$，出现从小到大一系列团簇，大团簇套小团簇
+        \item 标度不变性：FM和PM偶然地也有，AFM就没有；二级相变必有
+    \end{itemize}
+    
+    \begin{center}
+        \includegraphics[width=0.5\textwidth]{{T=2.26-L=100-h=0}.png}
+    \end{center}
+    
+\end{frame}
+
+\begin{frame}
+\frametitle{演示2：相图}
+    
+常见的二级相变范式
+
+\begin{center}
+    \input{phase-diagram-scheme.tex}
+\end{center}
+    
+\end{frame}
+
+\begin{frame}
+\frametitle{演示2：相图}
+
+访问\texttt{ising-phase-diagram-both-side\index.html}，观看逐个扫描相图上的点的过程    
+
+\begin{center}
+    \includegraphics[width=\textwidth]{ising-phase-diagram-both-side.PNG}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{演示2：相图}
+
+取$L=100$得到的相图；虚线为无穷大体系的$T_\text{c}$理论值
+
+\begin{columns}
+
+\begin{column}{0.5\textwidth}
+    \begin{itemize}
+        \item 杨红、青两色代表两个不同指向的相
+        \item 在$T_\text{c}$附近（即居里点）两相区别消失
+        \item 绕过$T_\text{c}$点，可以从一个方向的铁磁序平滑过渡到另一个方向
+        \item 能否更加定量地观察临界点附近的行为？
+    \end{itemize}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+    \includegraphics[width=\textwidth]{phase-diagram-L-100.png}
+\end{column}
+
+\end{columns}
+
+
+\end{frame}
 
 \begin{frame}
 \frametitle{Finite size scaling and data collapsing}
@@ -80,9 +242,24 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{实现}
+\frametitle{Finite size scaling and data collapsing}
 
-    
+暂无交互式功能（见\texttt{ising-data-collapsing/ising-monte-carlo.jl}）
+
+\begin{columns}
+
+\begin{column}{0.5\textwidth}
+    \begin{itemize}
+        \item 数据点大体上确实在一条曲线上
+        \item 伪装临界点附近涨落非常大
+    \end{itemize}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+    \includegraphics[width=\textwidth]{../ising-data-collapsing/ising-data-collapsing-run-1.pdf}
+\end{column}
+
+\end{columns}
 
 \end{frame}
 
