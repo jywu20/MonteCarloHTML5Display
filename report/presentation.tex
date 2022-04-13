@@ -56,10 +56,10 @@
 \begin{frame}
 \frametitle{Metropolis方法更新自旋构型}
 
-Metropolis方法
+Metropolis方法\footnote{Janke, W. 1996. Monte Carlo simulations of spin systems. In Computational Physics. Springer. among others}
 \begin{itemize}
     \item 马尔可夫链蒙特卡洛（MCMC）：构建马尔可夫过程，使得收敛后的概率分布是我们需要的分布
-    \item 只需要满足   
+    \item 只需要满足以下条件，平衡时$\mathcal{C}$出现的概率就是$p(\mathcal{C})$
     \begin{itemize}
         \item 细致平衡条件
         \begin{equation}
@@ -67,7 +67,6 @@ Metropolis方法
         \end{equation} 
         \item 各态历经
     \end{itemize}
-    平衡时$\mathcal{C}$出现的概率就是$p(\mathcal{C})$
     \item 设$\mathcal{C}$和$\mathcal{D}$只差了一个自旋，$H[\mathcal{C}] > H[\mathcal{D}]$
     \begin{itemize}
         \item 可以取$p(\mathcal{C} \to \mathcal{D}) = 1$, 
@@ -97,14 +96,36 @@ Metropolis方法
 \end{frame}
 
 \begin{frame}
-\frametitle{演示1：展示自旋构型}
+\frametitle{程序代码示例}
 
-访问\texttt{ising-phase-plot-configuration/index.html}
+初始化自旋构型
 
 \begin{center}
-    \includegraphics[width=\textwidth]{ising-phase-plot-configuration.PNG}
+    \includegraphics[width=\textwidth]{code-MPIsing-initial.PNG}
 \end{center}
 
+\end{frame}
+
+\begin{frame}
+\frametitle{程序代码示例}
+
+更新一次；所谓“一次”指的是将所有的格点都尝试翻转一遍
+
+\begin{center}
+    \includegraphics[width=\textwidth]{code-MPIsing-update.PNG}
+\end{center}    
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{演示1：展示自旋构型}
+    
+    访问\texttt{ising-phase-plot-configuration/index.html}
+    
+    \begin{center}
+        \includegraphics[width=\textwidth]{ising-phase-plot-configuration.PNG}
+    \end{center}
+    
 \end{frame}
 
 \begin{frame}
@@ -126,7 +147,7 @@ $L=100$，观察不同温度下的构型：
     
     $L=100$，观察不同温度下的构型：
     \begin{itemize}
-        \item $T=3.5$是顺磁相，向上和向下的自旋散乱分布（虽然由于铁磁性相互作用，还是形成一定团簇）
+        \item $T=3.5$是顺磁相，向上和向下的自旋散乱分布（虽然由于铁磁性相互作用，方向相同的自旋还是聚集在一起）
     \end{itemize}
     
     \begin{center}
@@ -200,7 +221,8 @@ $L=100$，观察不同温度下的构型：
 \begin{frame}
 \frametitle{Finite size scaling and data collapsing}
 
-有限大小的系统中可观测量的行为
+有限大小的系统中可观测量的行为%
+\footnote{See arXiv 1101.3281, among others}
 
 \begin{itemize}
     \item 独立参数：体系边长$L$和归一化温度$t = (T - T_\text{c}) / T_\text{c}$；等价地说，$L$和（$L \to \infty$时的）关联长度$\xi \propto \abs*{t}^{- \nu}$
@@ -250,8 +272,9 @@ $L=100$，观察不同温度下的构型：
 
 \begin{column}{0.5\textwidth}
     \begin{itemize}
+        \item 使用理论数据$T_\text{c} = 2.2691853, \gamma = 7/4, \nu = 1$
         \item 数据点大体上确实在一条曲线上
-        \item 伪装临界点附近涨落非常大
+        \item 伪临界点附近涨落非常大
     \end{itemize}
 \end{column}
 
@@ -260,6 +283,17 @@ $L=100$，观察不同温度下的构型：
 \end{column}
 
 \end{columns}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{下一步做什么？}
+
+\begin{itemize}
+    \item 更好的data collapsing（临界点附近要用Wolff update）
+    \item 横场伊辛模型的离散路径积分模拟（=各向异性经典伊辛模型）
+    \item 不同种类的蒙特卡洛模拟（世界线蒙特卡洛模拟的可视化？）
+\end{itemize}    
 
 \end{frame}
 
