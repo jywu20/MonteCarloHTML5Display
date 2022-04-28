@@ -47,8 +47,8 @@
 \begin{itemize}
     \item 最为著名的磁学模型：简洁地重现了铁磁序、顺磁序、居里点
     \item 可能的自旋构型随着体系边长$L$增大，指数增大；最常出现的那些态无法一眼辨认出来
-    \item 难以解析研究（二维正方晶格上的解析解较晚才得到）——实际上，一开始伊辛模型被认为没有相变
-    \item 需要可视化自旋构型
+    \item 难以解析研究（二维正方晶格上的解析解在提出后30年才被找到）——实际上，一开始伊辛模型被认为没有相变
+    \item 蒙特卡洛模拟
 \end{itemize}
 
 \end{frame}
@@ -71,7 +71,7 @@ Metropolis方法\footnote{Janke, W. 1996. Monte Carlo simulations of spin system
     \begin{itemize}
         \item 可以取$p(\mathcal{C} \to \mathcal{D}) = 1$, 
         \begin{equation}
-            p(\mathcal{D} \to \mathcal{C}) = \ee^{- \beta (H[\mathcal{C}] - H[\mathcal{D}])} \eqcolon \text{accept rate},
+            p(\mathcal{D} \to \mathcal{C}) = \ee^{- \beta (H[\mathcal{C}] - H[\mathcal{D}])} \eqqcolon \text{accept rate},
         \end{equation}
         收敛时概率即为平衡态统计的概率。
         \item 统一处理：若0到1之间的随机数小于accept rate就翻转
@@ -88,7 +88,7 @@ Metropolis方法\footnote{Janke, W. 1996. Monte Carlo simulations of spin system
     \input{flip-one-site.tex} 
 \end{center}   
 
-于是取
+于是翻转格点$\vb*{i}$的accept rate就是
 \begin{equation}
     \text{accept rate} = \frac{P_\text{after}}{P_\text{before}} = \ee^{- 2 J \sum_{\langle \vb*{i}, \vb*{j} \rangle} \sigma_{\vb*{j}} - 2 h \sigma_{\vb*{i}} }.
 \end{equation}
@@ -133,7 +133,7 @@ Metropolis方法\footnote{Janke, W. 1996. Monte Carlo simulations of spin system
 
 $L=100$，观察不同温度下的构型：
 \begin{itemize}
-    \item $T=1.5$是铁磁相，几乎所有自旋均向下，只有零星涨落
+    \item $T=1.5, h=-0.1$是铁磁相，几乎所有自旋均向下，只有零星涨落
 \end{itemize}
 
 \begin{center}
@@ -147,7 +147,7 @@ $L=100$，观察不同温度下的构型：
     
     $L=100$，观察不同温度下的构型：
     \begin{itemize}
-        \item $T=3.5$是顺磁相，向上和向下的自旋散乱分布（虽然由于铁磁性相互作用，方向相同的自旋还是聚集在一起）
+        \item $T=3.5, h = 0.0$是顺磁相，向上和向下的自旋散乱分布（虽然由于铁磁性相互作用，方向相同的自旋还是聚集在一起）
     \end{itemize}
     
     \begin{center}
@@ -161,8 +161,9 @@ $L=100$，观察不同温度下的构型：
     
     $L=100$，观察不同温度下的构型：
     \begin{itemize}
-        \item $T=2.26 \approx T_\text{c}$，出现从小到大一系列团簇，大团簇套小团簇
-        \item 标度不变性：FM和PM偶然地也有，AFM就没有；二级相变必有
+        \item $T=2.26 \approx T_\text{c}, h=0.0$，出现一系列大小不同、嵌套的团簇
+        \item 标度不变性：二级相变的特征
+        %（FM和PM好像有，但关联函数有特征长度）
     \end{itemize}
     
     \begin{center}

@@ -1,0 +1,20 @@
+body {
+    padding: 2cm;
+}
+
+#control_panel {
+    width: 300pt;
+    float: left;
+    margin-left: 1cm;
+}
+
+#ising_input_form {
+    border: 1px solid #8AC007;
+    border-radius: 10px;
+    padding: 1em;
+    text-align: center;
+}
+
+#ising_configuration {
+    float: left;
+}
