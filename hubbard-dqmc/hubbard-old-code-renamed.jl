@@ -5,15 +5,13 @@ using Random
 using ProgressMeter
 using Statistics
 
-mutable struct HubbardModelDQMC
+struct HubbardModelDQMC
     U::Float64
-    beta::Float64
+    β::Float64
     L::Int64
-    dtau::Float64
-    n_sweep::Int64
-    n_wrap::Int64
-    current_green_function_up::Array{Float64}
-    current_green_function_down::Array{Float64}
+    Δτ::Float64
+    G_up::Array{Float64}
+    G_dn::Array{Float64}
     s::Array{Float64}
 end
 
@@ -24,21 +22,21 @@ function back_into_range(idx, upper)
     (idx - upper) % upper + upper
 end
 
-function hubbard_dqmc(U::Float64, beta::Float64, L::Int64, dtau::Float64, n_bin::Int64, n_sweep::Int64, n_wrap::Int64, observe)
+function hubbard_dqmc(U::Float64, β::Float64, L::Int64, Δτ::Float64, n_bin::Int64, n_sweep::Int64, n_wrap::Int64, observe)
 
     # The total number of sites
-    n_site = L^2
+    n_sites = L^2
     # The total number of imaginary steps
-    n_imtimes::Int64 = round(beta / dtau)
+    n_imtimes::Int64 = round(β / Δτ)
     # The decoupling parameter between the auxiliary field and the free fermion field
-    alpha = acosh(exp(dtau * U / 2))
+    α = acosh(exp(Δτ * U / 2))
 
     # The auxiliary field
-    s = rand((-1, 1), (n_imtimes, n_site))
+    s = rand((-1, 1), (n_imtimes, n_sites))
 
     inverse_list = zeros(Int64, (L, L))
-    site_list = zeros(Int64, (n_site, 2))
-    id = Matrix{Float64}(I, n_site, n_site)
+    site_list = zeros(Int64, (n_sites, 2))
+    id = Matrix{Float64}(I, n_sites, n_sites)
 
     for i in 1:L
         for j in 1:L
@@ -47,7 +45,7 @@ function hubbard_dqmc(U::Float64, beta::Float64, L::Int64, dtau::Float64, n_bin:
         end
     end
 
-    neighbor_list = zeros(Int64, (n_site, 8))
+    neighbor_list = zeros(Int64, (n_sites, 8))
     for i in 1:L
         for j in 1:L
             neighbor_list[inverse_list[i, j], 1] = inverse_list[i, back_into_range(j+1, L)]
@@ -61,15 +59,15 @@ function hubbard_dqmc(U::Float64, beta::Float64, L::Int64, dtau::Float64, n_bin:
         end
     end
 
-    T = zeros(Float64, (n_site, n_site))
+    T = zeros(Float64, (n_sites, n_sites))
 
-    for i in 1:n_site
+    for i in 1:n_sites
         for nn in [1, 2, 3, 4]
             T[i, neighbor_list[i, nn]] = -1.0
         end
     end
 
-    plaquette_sites = zeros(Int64, (2, Int64(n_site / 4)))
+    plaquette_sites = zeros(Int64, (2, Int64(n_sites / 4)))
 
     first_class_count = 1
     second_class_count = 1
@@ -98,24 +96,24 @@ function hubbard_dqmc(U::Float64, beta::Float64, L::Int64, dtau::Float64, n_bin:
     exp_kinetic_mat = I
 
     for m in [1, 2]
-        for n in 1:Int64(n_site/4)
+        for n in 1:Int64(n_sites/4)
             i1 = plaquette_sites[m, n]
             i2 = neighbor_list[i1, 1]
             i3 = neighbor_list[i1, 5]
             i4 = neighbor_list[i1, 2]
-            exp_kinetic_mat = exp_kinetic_mat * exp_two_hot_sym_mat(dtau, (i1, i2))
-            exp_kinetic_mat = exp_kinetic_mat * exp_two_hot_sym_mat(dtau, (i2, i3))
-            exp_kinetic_mat = exp_kinetic_mat * exp_two_hot_sym_mat(dtau, (i3, i4))
-            exp_kinetic_mat = exp_kinetic_mat * exp_two_hot_sym_mat(dtau, (i4, i1))
+            exp_kinetic_mat = exp_kinetic_mat * exp_two_hot_sym_mat(Δτ, (i1, i2))
+            exp_kinetic_mat = exp_kinetic_mat * exp_two_hot_sym_mat(Δτ, (i2, i3))
+            exp_kinetic_mat = exp_kinetic_mat * exp_two_hot_sym_mat(Δτ, (i3, i4))
+            exp_kinetic_mat = exp_kinetic_mat * exp_two_hot_sym_mat(Δτ, (i4, i1))
         end
     end
 
     function exp_int_up_mat(s, n)
-        diagm(exp.(alpha * s[n, :]))
+        diagm(exp.(α * s[n, :]))
     end
 
     function exp_int_down_mat(s, n)
-        diagm(exp.(- alpha * s[n, :]))
+        diagm(exp.(- α * s[n, :]))
     end
 
     function b_mat_up_at_tau(s, n)
@@ -204,7 +202,7 @@ function hubbard_dqmc(U::Float64, beta::Float64, L::Int64, dtau::Float64, n_bin:
         (V, D, U)
     end
 
-    function green_function_up_stable(s, n)
+    function G_up_stable(s, n)
         U_L, D_L, V_L = b_mat_up_left(s, n)
         V_R, D_R, U_R = b_mat_up_right(s, n)
         U, D, Vt = svd(inv(U_R * U_L) + D_L * (V_L * V_R) * D_R)
@@ -212,7 +210,7 @@ function hubbard_dqmc(U::Float64, beta::Float64, L::Int64, dtau::Float64, n_bin:
         inv(V * U_R) * diagm(1.0 ./ D) * inv(U_L * U)
     end
 
-    function green_function_down_stable(s, n)
+    function G_dn_stable(s, n)
         U_L, D_L, V_L = b_mat_down_left(s, n)
         V_R, D_R, U_R = b_mat_down_right(s, n)
         U, D, Vt = svd(inv(U_R * U_L) + D_L * (V_L * V_R) * D_R)
@@ -220,47 +218,47 @@ function hubbard_dqmc(U::Float64, beta::Float64, L::Int64, dtau::Float64, n_bin:
         inv(V * U_R) * diagm(1.0 ./ D) * inv(U_L * U)
     end
 
-    function delta_up(s, n, i)
-        exp(-2.0 * alpha * s[n, i]) - 1.0
+    function Δ_up(s, n, i)
+        exp(-2.0 * α * s[n, i]) - 1.0
     end
 
-    function delta_down(s, n, i)
-        exp(2.0 * alpha * s[n, i]) - 1.0
+    function Δ_dn(s, n, i)
+        exp(2.0 * α * s[n, i]) - 1.0
     end
 
     function accept_ratio_up(s, n, i, G)
-        1.0 + delta_up(s, n, i) * (1.0 - G[i, i])
+        1.0 + Δ_up(s, n, i) * (1.0 - G[i, i])
     end
 
     function accept_ratio_down(s, n, i, G)
-        1.0 + delta_down(s, n, i) * (1.0 - G[i, i])
+        1.0 + Δ_dn(s, n, i) * (1.0 - G[i, i])
     end
 
-    function green_function_up_update(s, n, i, G)
+    function G_up_update(s, n, i, G)
         a = G[:, i]
         b = ((I - G)[i, :])'
-        G - delta_up(s, n, i) * a * b / accept_ratio_up(s, n, i, G)
+        G - Δ_up(s, n, i) * a * b / accept_ratio_up(s, n, i, G)
     end
 
-    function green_function_down_update(s, n, i, G)
+    function G_dn_update(s, n, i, G)
         a = G[:, i]
         b = ((I - G)[i, :])'
-        G - delta_down(s, n, i) * a * b / accept_ratio_down(s, n, i, G)
+        G - Δ_dn(s, n, i) * a * b / accept_ratio_down(s, n, i, G)
     end
 
-    current_green_function_up = green_function_up_stable(s, 1)
-    current_green_function_down = green_function_down_stable(s, 1)
+    current_G_up = G_up_stable(s, 1)
+    current_G_dn = G_dn_stable(s, 1)
 
     function sweep(tau)
-        for i in 1:n_site
+        for i in 1:n_sites
 
-            accept_rate_up = accept_ratio_up(s, tau, i, current_green_function_up)
-            accept_rate_down = accept_ratio_down(s, tau, i, current_green_function_down)
+            accept_rate_up = accept_ratio_up(s, tau, i, current_G_up)
+            accept_rate_down = accept_ratio_down(s, tau, i, current_G_dn)
             accept_rate = accept_rate_up * accept_rate_down
             
             if rand(Float64) < accept_rate
-                current_green_function_up = green_function_up_update(s, tau, i, current_green_function_up)
-                current_green_function_down = green_function_down_update(s, tau, i, current_green_function_down)
+                current_G_up = G_up_update(s, tau, i, current_G_up)
+                current_G_dn = G_dn_update(s, tau, i, current_G_dn)
                 s[tau, i] *= -1
             end
         end
@@ -277,11 +275,11 @@ function hubbard_dqmc(U::Float64, beta::Float64, L::Int64, dtau::Float64, n_bin:
                 sweep(tau)
                 
                 if tau % n_wrap == 0
-                    current_green_function_up = green_function_down_stable(s, tau + 1)
-                    current_green_function_down = green_function_down_stable(s, tau + 1)
+                    current_G_up = G_dn_stable(s, tau + 1)
+                    current_G_dn = G_dn_stable(s, tau + 1)
                 else
-                    current_green_function_up = b_mat_up_at_tau(s, tau + 1) * current_green_function_up * inv(b_mat_up_at_tau(s, tau + 1))
-                    current_green_function_down = b_mat_down_at_tau(s, tau + 1) * current_green_function_down * inv(b_mat_down_at_tau(s, tau + 1))
+                    current_G_up = b_mat_up_at_tau(s, tau + 1) * current_G_up * inv(b_mat_up_at_tau(s, tau + 1))
+                    current_G_dn = b_mat_down_at_tau(s, tau + 1) * current_G_dn * inv(b_mat_down_at_tau(s, tau + 1))
                 end
 
             end
@@ -290,16 +288,16 @@ function hubbard_dqmc(U::Float64, beta::Float64, L::Int64, dtau::Float64, n_bin:
                 sweep(tau)
 
                 if tau % n_wrap == 0
-                    current_green_function_up = green_function_up_stable(s, tau - 1)
-                    current_green_function_down = green_function_down_stable(s, tau - 1)
+                    current_G_up = G_up_stable(s, tau - 1)
+                    current_G_dn = G_dn_stable(s, tau - 1)
                 else
-                    current_green_function_up = inv(b_mat_up_at_tau(s, tau)) * current_green_function_up * b_mat_up_at_tau(s, tau)
-                    current_green_function_down = inv(b_mat_down_at_tau(s, tau)) * current_green_function_down * b_mat_down_at_tau(s, tau)
+                    current_G_up = inv(b_mat_up_at_tau(s, tau)) * current_G_up * b_mat_up_at_tau(s, tau)
+                    current_G_dn = inv(b_mat_down_at_tau(s, tau)) * current_G_dn * b_mat_down_at_tau(s, tau)
                 end
 
             end
 
-            push!(sweep_data, observe(current_green_function_up, current_green_function_down, site_list, inverse_list, T))
+            push!(sweep_data, observe(current_G_up, current_G_dn, site_list, inverse_list, T))
         end
 
         push!(bin_data, mean(sweep_data))
@@ -329,7 +327,7 @@ function hubbard_dqmc(U::Float64, beta::Float64, L::Int64, dtau::Float64, n_bin:
     (grid_list=site_list, inverse_list=inverse_list, neighbor_list=neighbor_list, observables=bin_data)
 end
 
-U = 1.0
+U = 2.0
 beta = 4.0
 L = 4
 dtau = 0.05

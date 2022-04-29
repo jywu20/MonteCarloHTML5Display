@@ -20,7 +20,9 @@ abstract type AbstractLattice end
 
 const square_lattice_2D_neighbor_list_indices = [[1, 2, 3, 4], [5, 6, 7, 8]]
 
-struct SquareLattice2D 
+struct SquareLattice2D <: AbstractLattice
+    n_sites::Int
+
     # Two dimensional, site_list[i, 1] = x, site_list[i, 2] = y
     site_list::Matrix{Int}
 
@@ -34,10 +36,9 @@ struct SquareLattice2D
 end
 
 function SquareLattice2D(L::Integer)
-    # The total number of sites
-    n_site = L^2
+    n_sites = L^2
     inverse_list = zeros(Int64, (L, L))
-    site_list = zeros(Int64, (n_site, 2))
+    site_list = zeros(Int64, (n_sites, 2))
 
     for i in 1:L
         for j in 1:L
@@ -46,7 +47,7 @@ function SquareLattice2D(L::Integer)
         end
     end
 
-    neighbor_list = zeros(Int64, (n_site, 8))
+    neighbor_list = zeros(Int64, (n_sites, 8))
     for i in 1:L
         for j in 1:L
             neighbor_list[inverse_list[i, j], 1] = inverse_list[i, back_into_range(j+1, L)]
@@ -60,5 +61,5 @@ function SquareLattice2D(L::Integer)
         end
     end
 
-    SquareLattice2D(site_list, inverse_list, neighbor_list, square_lattice_2D_neighbor_list_indices)
+    SquareLattice2D(n_sites, site_list, inverse_list, neighbor_list, square_lattice_2D_neighbor_list_indices)
 end
