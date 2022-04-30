@@ -56,3 +56,128 @@ n_bin = 10
 ```
 
 更新服务器上的代码，跑一下试一试。slurm id为1263693。
+
+似乎`println`更新不及时；加入了一些`flush(stdout)`语句，再看看。
+此时
+```
+t = 1.0
+U = 2.0
+β = 4.0
+```
+slurm id为1265098。
+
+1265098超时了。看来最好还是从$L=4$开始做。
+
+可以做的事情：
+- 计算$L=10$时扫一次要多久
+
+运行
+```julia
+@time sweep!(model, 1)
+```
+得到
+```
+ 33.939589 seconds (3.29 M allocations: 12.192 GiB, 2.80% gc time)
+```
+确实很长……
+
+按照
+```julia
+L = 10 
+lattice = SquareLattice2D(L)
+n_sites = lattice.n_sites
+
+t = 1.0
+U = 4.0
+β = 4.0
+n_imtimes = 100
+n_wrap = 10
+
+n_heat = 1000
+n_sweep = 4000
+
+n_bin = 10
+```
+的规模，总计扫了$1000 + 10 \times 4000 = 41000$次，需要的时间是
+```julia
+33.939589 * 41000 / 3600
+```
+也就是386个小时！预热的时间也要9小时。
+
+我觉得我还是试一试不同的$L$下扫一次需要的时间为好。
+
+| $L$ | 时间(s) |
+| :------ | :------ |
+| 4 | 0.735203 |
+| 5 | 1.568580 |
+| 6 | 2.041254 |
+| 7 | 7.743210 |
+| 8 | 12.953749 |
+| 9 | 20.645465 |
+| 10 | 33.939589 |
+
+这意味着$L=4$的情况也需要8小时。
+
+在加入磁化率计算之后，使用如下小规模计算：
+```julia
+#region Model parameters
+
+t = 1.0
+U = 2.0
+β = 4.0
+
+#endregion
+
+#region Problem size
+
+L = 4 
+lattice = SquareLattice2D(L)
+n_sites = lattice.n_sites
+site_list = lattice.site_list
+
+n_imtimes = 100
+n_wrap = 10
+
+#endregion
+
+#region Sweeping control
+
+n_heat = 100
+n_sweep = 400
+n_bin = 10
+
+#endregion
+```
+
+似乎磁化那里有问题。设置$U=0$，只扫描一个bin，得到
+```
+Square lattice 2D Hubbard simple DQMC
+
+
+t   =    1.0
+U   =    0.0
+β   =    4.0
+
+n_sites   =   16
+n_imtimes =   100
+n_wrap    =   10
+
+n_heat    =   100
+n_sweep   =   400
+n_bin     =   1
+
+Heating up finished.
+
+
+====================================================
+E_kin            double_occ    magnetization
+====================================================
+-1.4993291872    0.2500000000    0.0507602959 
+
+====================================================
+
+E_kin      =   -1.4993291872038983 ± NaN
+double_occ =   0.25000000000000255 ± NaN
+mag        =   0.050760295887215943 ± NaN
+```
+然而`mag`那里应该是0.01才对。

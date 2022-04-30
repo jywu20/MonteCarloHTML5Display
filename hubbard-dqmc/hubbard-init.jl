@@ -54,21 +54,21 @@ function HubbardDQMC(::Type{L}, lattice::L, t::Float64, U::Float64, β::Float64,
 
     id = Matrix{Float64}(I, n_sites, n_sites)
 
-    plaquette_sites = zeros(Int64, (2, Int64(n_sites / 4)))
-
-    first_class_count = 1
-    second_class_count = 1
-    
-    for site_idx in 1 : n_sites
-        i, j = site_list[site_idx, :]
-        if i % 2 == 1 && j % 2 == 1
-            plaquette_sites[1, first_class_count] = inverse_list[i, j]
-            first_class_count += 1
-        elseif i % 2 == 0 && j % 2 == 0
-            plaquette_sites[2, second_class_count] = inverse_list[i, j]
-            second_class_count += 1
-        end
-    end
+    #plaquette_sites = zeros(Int64, (2, Int64(n_sites / 4)))
+    #
+    #first_class_count = 1
+    #second_class_count = 1
+    #
+    #for site_idx in 1 : n_sites
+    #    i, j = site_list[site_idx, :]
+    #    if i % 2 == 1 && j % 2 == 1
+    #        plaquette_sites[1, first_class_count] = inverse_list[i, j]
+    #        first_class_count += 1
+    #    elseif i % 2 == 0 && j % 2 == 0
+    #        plaquette_sites[2, second_class_count] = inverse_list[i, j]
+    #        second_class_count += 1
+    #    end
+    #end
 
     # exp_kinetic_mat = I
     #for m in [1, 2]

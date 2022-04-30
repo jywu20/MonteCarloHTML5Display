@@ -26,7 +26,7 @@ struct SquareLattice2D <: AbstractLattice
     # Two dimensional, site_list[i, 1] = x, site_list[i, 2] = y
     site_list::Matrix{Int}
 
-    # inverse_list[x, y]
+    # inverse_list[x, y] = i
     inverse_list::Matrix{Int}
 
     # neighbor_list[i, 1:4] gives the nearest neighbors, while 
