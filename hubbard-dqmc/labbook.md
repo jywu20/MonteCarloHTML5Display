@@ -22,3 +22,37 @@ Mott 0.1799663182632188 0.0011940302855397808
 - 将主循环移动到`main.jl`
 - 构建格点的移动到`lattice.jl`
 - 理想情况下，可以先写一个generic的版本用来计算$\ee^{- \Delta \tau T}$，然后写一个专属于正方晶格的版本做checkboard decomposition。
+
+# 2022.4.30
+
+目前还没有做的事情：
+- 将自旋上和自旋下的各种函数合并（是否有这个必要？性能overhead？）
+
+提交
+```
+U = 4.0
+β = 4.0
+```
+的任务，slurm id为1262582。输出为`slurm-1262582.out`，应该是没啥问题。
+
+将checkboard decomposition的无用代码（它们应该在计算$\exp(-\Delta \tau \bold{T})$乘以别的矩阵时出现，现在我先把$\exp(-\Delta \tau \bold{T})$算好存起来，那用不用checkboard decomposition没有差别）注释掉，重新做计算，扩大规模。
+
+目前的规模：
+```julia
+L = 10 
+lattice = SquareLattice2D(L)
+n_sites = lattice.n_sites
+
+t = 1.0
+U = 4.0
+β = 4.0
+n_imtimes = 100
+n_wrap = 10
+
+n_heat = 1000
+n_sweep = 4000
+
+n_bin = 10
+```
+
+更新服务器上的代码，跑一下试一试。slurm id为1263693。

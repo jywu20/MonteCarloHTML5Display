@@ -1,23 +1,23 @@
-function exp_int_up_mat(model::HubbardDQMC, n::Int64)
+function expV_up(model::HubbardDQMC, n::Int64)
     s = model.s
     α = model.α
     diagm(exp.(α * s[n, :]))
 end
 
-function exp_int_down_mat(model::HubbardDQMC, n::Int64)
+function expV_dn(model::HubbardDQMC, n::Int64)
     s = model.s
     α = model.α
     diagm(exp.(- α * s[n, :]))
 end
 
 function B_up_τ(model::HubbardDQMC, n::Int64)
-    exp_kinetic_mat = model.exp_kinetic_mat
-    exp_int_up_mat(model, n) * exp_kinetic_mat
+    exp_kinetic_mat = model.expT
+    expV_up(model, n) * exp_kinetic_mat
 end
 
 function B_dn_τ(model::HubbardDQMC, n::Int64)
-    exp_kinetic_mat = model.exp_kinetic_mat
-    exp_int_down_mat(model, n) * exp_kinetic_mat
+    exp_kinetic_mat = model.expT
+    expV_dn(model, n) * exp_kinetic_mat
 end
 
 function B_up(model::HubbardDQMC, n2::Int64, n1::Int64)
@@ -137,23 +137,24 @@ function accept_ratio_down(model::HubbardDQMC, n::Int64, i::Int64, G::Matrix{Flo
     1.0 + Δ_dn(model, n, i) * (1.0 - G[i, i])
 end
 
-function G_up_update(model::HubbardDQMC, n::Int64, i::Int64, G::Matrix{Float64})
+function G_up_update!(model::HubbardDQMC, n::Int64, i::Int64, G::Matrix{Float64})
     a = G[:, i]
     b = ((I - G)[i, :])'
-    G - Δ_up(model, n, i) * a * b / accept_ratio_up(model, n, i, G)
+    G .-= Δ_up(model, n, i) * a * b / accept_ratio_up(model, n, i, G)
 end
 
-function G_dn_update(model::HubbardDQMC, n::Int64, i::Int64, G::Matrix{Float64})
+function G_dn_update!(model::HubbardDQMC, n::Int64, i::Int64, G::Matrix{Float64})
     a = G[:, i]
     b = ((I - G)[i, :])'
-    G - Δ_dn(model, n, i) * a * b / accept_ratio_down(model, n, i, G)
+    G .-= Δ_dn(model, n, i) * a * b / accept_ratio_down(model, n, i, G)
 end
 
-function sweep!(model::HubbardDQMC, n_sweep::Int64)
+function sweep!(model::HubbardDQMC, n_sweep::Int64; observe = nothing)
     n_imtimes = model.n_imtimes
     s = model.s
     lattice = model.lattice
     n_sites = lattice.n_sites
+    n_wrap = model.n_wrap
 
     current_G_up = G_up_stable(model, 1)
     current_G_dn = G_dn_stable(model, 1)
@@ -166,8 +167,8 @@ function sweep!(model::HubbardDQMC, n_sweep::Int64)
             accept_rate = accept_rate_up * accept_rate_down
             
             if rand(Float64) < accept_rate
-                current_G_up = G_up_update(model, τ, i, current_G_up)
-                current_G_dn = G_dn_update(model, τ, i, current_G_dn)
+                G_up_update!(model, τ, i, current_G_up)
+                G_dn_update!(model, τ, i, current_G_dn)
                 s[τ, i] *= -1
             end
         end
@@ -199,5 +200,11 @@ function sweep!(model::HubbardDQMC, n_sweep::Int64)
             end
 
         end
+
+        if observe !== nothing
+            observe(current_G_up, current_G_dn, model)
+        end
     end
 end
+
+sweep!(observe, model::HubbardDQMC, n_sweep::Int64) = sweep!(model::HubbardDQMC, n_sweep::Int64; observe = observe)
