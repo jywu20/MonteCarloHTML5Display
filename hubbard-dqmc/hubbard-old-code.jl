@@ -329,7 +329,7 @@ function hubbard_dqmc(U::Float64, beta::Float64, L::Int64, dtau::Float64, n_bin:
     (grid_list=grid_list, inverse_list=inverse_list, neighbor_list=neighbor_list, observables=bin_data)
 end
 
-U = 1.0
+U = 8.0
 beta = 4.0
 L = 4
 dtau = 0.05

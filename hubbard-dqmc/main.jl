@@ -7,7 +7,7 @@ include("lib.jl")
 #region Model parameters
 
 t = 1.0
-U = 0.0
+U = 8.0
 β = 4.0
 
 #endregion
@@ -19,16 +19,17 @@ lattice = SquareLattice2D(L)
 n_sites = lattice.n_sites
 site_list = lattice.site_list
 
-n_imtimes = 100
+Δτ = 0.05
+n_imtimes = Int(β / Δτ) 
 n_wrap = 10
 
 #endregion
 
 #region Sweeping control
 
-n_heat = 100
-n_sweep = 400
-n_bin = 1
+n_heat = Int(4 * n_sites * β) 
+n_sweep = 500
+n_bin = 10
 
 #endregion
 
@@ -104,7 +105,8 @@ for bin_count in 1 : n_bin
                       - G_dn_c[i, i] * G_up_c[j, j])
             fourier_prefactor * sᶻ_isᶻ_j
         end
-        mag /= n_sites^2
+        # The factor 4 comes from spin 1/2
+        mag /= 4 * n_sites^2
 
         E_kin_history[sweep_count] = E_kin
         mott_history[sweep_count] = mott

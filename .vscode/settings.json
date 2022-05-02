@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
         "Ising"
-    ]
+    ],
+    "fortran.ignoreWarning.fortls": true
 }
