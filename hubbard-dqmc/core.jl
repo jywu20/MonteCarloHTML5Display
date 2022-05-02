@@ -1,12 +1,11 @@
-function sweep(times::Int64, heating::Bool)
-    progress = Progress(times)
+function sweep(n_sweep::Int64, heating::Bool)
+    progress = Progress(n_sweep)
 
-    for _ in 1 : times
+    for _ in 1 : n_sweep
         for _ in 1 : n_τ - 1
             for i in 1 : n_sites
-                global i_now = i
-                if rand() < accept_rate()
-                    G_update()
+                if rand() < accept_rate(τ_now, i)
+                    G_update(τ_now, i)
                 end
             end
             propag_forward()    
@@ -18,9 +17,8 @@ function sweep(times::Int64, heating::Bool)
         
         for _ in 1 : n_τ - 1
             for i in 1 : n_sites
-                global i_now = i
-                if rand() < accept_rate()
-                    G_update()
+                if rand() < accept_rate(τ_now, i)
+                    G_update(τ_now, i)
                 end
             end
             propag_backward()    

@@ -32,8 +32,6 @@ T_kin = - t * T_kin
 
 # What imaginary time step are we at now. Ranging from 1 to n_τ
 τ_now = 1
-# Which site are we on now. Ranging from 1 to n_sites
-i_now = 1
 
 # The auxiliary field. The first index is the imaginary time, the second index labels sites.
 s_τ = rand((-1, 1), n_τ, n_sites)

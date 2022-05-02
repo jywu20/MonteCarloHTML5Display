@@ -21,28 +21,26 @@ function observe()
         push!(kinetic_energy_history, k_e)
 
         G_up_c = (I - G_up)'
-        G_down_c = (I - G_dn)'
+        G_dn_c = (I - G_dn)'
         mott = sum(1 : n_sites) do i
-            G_up_c[i, i] * G_down_c[i, i]
+            G_up_c[i, i] * G_dn_c[i, i]
         end
         mott /= n_sites
         push!(mott_history, mott)
 
-        Q = [π, π]
         mag = sum(Iterators.product(1 : n_sites, 1 : n_sites)) do point_pair
             i, j = point_pair
             r_i = lattice.site_list[i, :]
             r_j = lattice.site_list[j, :]
-            fourier_prefactor = exp(- im * Q' * (r_i - r_j))
+            fourier_prefactor = (-1)^sum(r_i - r_j)
             sᶻ_isᶻ_j = (G_up_c[i, i] * G_up_c[j, j] + G_up_c[i, j] * G_up[i, j] 
-                      + G_down_c[i, i] * G_down_c[j, j] + G_down_c[i, j] * G_dn[i, j]
-                      - G_up_c[i, i] * G_down_c[j, j] 
-                      - G_down_c[i, i] * G_up_c[j, j])
+                      + G_dn_c[i, i] * G_dn_c[j, j] + G_dn_c[i, j] * G_dn[i, j]
+                      - G_up_c[i, i] * G_dn_c[j, j] 
+                      - G_dn_c[i, i] * G_up_c[j, j])
             fourier_prefactor * sᶻ_isᶻ_j
         end
         # The factor 4 comes from spin 1/2
         mag /= 4 * n_sites^2
-        mag = real(mag)
         push!(mag_history, mag)
 
         if ! binned_only
