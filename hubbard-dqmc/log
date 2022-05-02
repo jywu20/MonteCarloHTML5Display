@@ -1,0 +1,14 @@
+Welcome to a simple DQMC simulation of Hubbard model.
+
+We are simulating with
+  t      =   1.0
+  U      =   8.0
+  beta   =   4.0
+  dtau   =   0.1
+  alpha  =   0.955075280041926
+on a 4 * 4 2d lattice and with 40 time steps.
+Initialization completed.
+Heating up for 0 steps.
+Heating up completed.
+
+Bin 1 completed.
