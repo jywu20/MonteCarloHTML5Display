@@ -31,14 +31,14 @@ function accept_rate()
 end
 
 function G_update()
-    copy!(G_up_now, G_up_now - G_up_now * Δ_up(τ_now, i_now) * (I - G_up_now) / accept_rate_up())
-    copy!(G_down_now, G_down_now - G_down_now * Δ_down(τ_now, i_now) * (I - G_down_now) / accept_rate_down())
+    copy!(G_up, G_up - G_up * Δ_up(τ_now, i_now) * (I - G_up) / accept_rate_up())
+    copy!(G_dn, G_dn - G_dn * Δ_down(τ_now, i_now) * (I - G_dn) / accept_rate_down())
     s_τ[τ_now, i_now] *= -1
     B_up_storage[:, :, τ_now] = B_up(τ_now)
     B_down_storage[:, :, τ_now] = B_down(τ_now)
 end
 
 function wrap()
-    copy!(G_up_now, G_up(τ_now))
-    copy!(G_down_now, G_down(τ_now))
+    copy!(G_up, G_up(τ_now))
+    copy!(G_dn, G_down(τ_now))
 end

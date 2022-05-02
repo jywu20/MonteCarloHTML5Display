@@ -44,12 +44,12 @@ B_down_storage = zeros(n_sites, n_sites, n_τ)
 
 for τ in 1 : n_τ
     B_up_storage[:, :, τ] = B_up(τ)
-    B_down_storage[:, :, τ] = B_down(τ)
+    B_down_storage[:, :, τ] = B_dn(τ)
 end
 
 # The Green functions of the current time τ.
-G_up_now = G_up(τ_now)
-G_down_now = G_down(τ_now)
+G_up = G_up_τ(τ_now)
+G_dn = G_dn_τ(τ_now)
 
 # Counts how many times have `propag_forward` and `propag_backward` been invoked.
 # If it reaches n_wrap, then Green functions will be calculated from B-matrices, and the counter is set back to 0.

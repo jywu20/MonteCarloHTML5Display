@@ -15,26 +15,26 @@ end
 function propag_forward()
     global wrap_count += 1
     global τ_now += 1
-    copy!(G_up_now, B_up(τ_now) * G_up_now * inv(B_up(τ_now)))
-    copy!(G_down_now, B_down(τ_now) * G_down_now * inv(B_down(τ_now)))
+    copy!(G_up, B_up(τ_now) * G_up * inv(B_up(τ_now)))
+    copy!(G_dn, B_down(τ_now) * G_dn * inv(B_down(τ_now)))
 
     if wrap_count == n_wrap
         global wrap_count = 0
-        copy!(G_up_now, G_up(τ_now))
-        copy!(G_down_now, G_down(τ_now))
+        copy!(G_up, G_up(τ_now))
+        copy!(G_dn, G_down(τ_now))
     end
 end
 
 function propag_backward()
     global wrap_count += 1
-    copy!(G_up_now, B_up_inv(τ_now) * G_up_now * B_up(τ_now))
-    copy!(G_down_now, B_down_inv(τ_now) * G_down_now * B_down(τ_now))
+    copy!(G_up, B_up_inv(τ_now) * G_up * B_up(τ_now))
+    copy!(G_dn, B_down_inv(τ_now) * G_dn * B_down(τ_now))
     global τ_now -= 1
 
     if wrap_count == n_wrap
         global wrap_count = 0
-        copy!(G_up_now, G_up(τ_now))
-        copy!(G_down_now, G_down(τ_now))
+        copy!(G_up, G_up(τ_now))
+        copy!(G_dn, G_down(τ_now))
         return
     end
 end

@@ -43,8 +43,8 @@ for τ in 1 : n_τ
 end
 
 # The Green functions of the current time τ.
-G_up_now = G_up(τ_now)
-G_down_now = G_down(τ_now)
+G_up = G_up(τ_now)
+G_dn = G_down(τ_now)
 
 # Counts how many times have `propag_forward` and `propag_backward` been invoked.
 # If it reaches n_wrap, then Green functions will be calculated from B-matrices, and the counter is set back to 0.

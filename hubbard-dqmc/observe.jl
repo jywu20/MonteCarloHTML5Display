@@ -11,17 +11,17 @@ function observe()
     if double_check
         # Errors between propagated Green functions and Green functions calculated from definition:
         open(error_path, "a") do error_file
-            println(error_file, relative_err(G_up(τ_now), G_up_now))
-            println(error_file, relative_err(G_down(τ_now), G_down_now))
+            println(error_file, relative_err(G_up_τ(τ_now), G_up))
+            println(error_file, relative_err(G_dn_τ(τ_now), G_dn))
         end
     end
     
     open(observables_path, "a") do observable_file
-        k_e = - (tr(T_kin * G_up_now) + tr(T_kin * G_down_now)) / n_sites
+        k_e = - (tr(T_kin * G_up) + tr(T_kin * G_dn)) / n_sites
         push!(kinetic_energy_history, k_e)
 
-        G_up_c = (I - G_up_now)'
-        G_down_c = (I - G_down_now)'
+        G_up_c = (I - G_up)'
+        G_down_c = (I - G_dn)'
         mott = sum(1 : n_sites) do i
             G_up_c[i, i] * G_down_c[i, i]
         end
@@ -34,8 +34,8 @@ function observe()
             r_i = lattice.site_list[i, :]
             r_j = lattice.site_list[j, :]
             fourier_prefactor = exp(- im * Q' * (r_i - r_j))
-            sᶻ_isᶻ_j = (G_up_c[i, i] * G_up_c[j, j] + G_up_c[i, j] * G_up_now[i, j] 
-                      + G_down_c[i, i] * G_down_c[j, j] + G_down_c[i, j] * G_down_now[i, j]
+            sᶻ_isᶻ_j = (G_up_c[i, i] * G_up_c[j, j] + G_up_c[i, j] * G_up[i, j] 
+                      + G_down_c[i, i] * G_down_c[j, j] + G_down_c[i, j] * G_dn[i, j]
                       - G_up_c[i, i] * G_down_c[j, j] 
                       - G_down_c[i, i] * G_up_c[j, j])
             fourier_prefactor * sᶻ_isᶻ_j

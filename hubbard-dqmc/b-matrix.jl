@@ -10,11 +10,11 @@ function B_up_inv(τ)
     exp(Δτ * T_kin) * diagm(- exp.(α * s_τ[τ, :]))
 end
 
-function B_down(τ)
+function B_dn(τ)
     diagm(exp.(- α * s_τ[τ, :])) * exp(- Δτ * T_kin)
 end
 
-function B_down_inv(τ)
+function B_dn_inv(τ)
     exp(Δτ * T_kin) * diagm(exp.(α * s_τ[τ, :]))
 end
 
@@ -26,10 +26,10 @@ function B_up_0_τ(τ)
     B
 end
 
-function B_down_0_τ(τ)
+function B_dn_0_τ(τ)
     B = I
     for τp in 1 : τ
-        B = B_down(τp) * B
+        B = B_dn(τp) * B
     end
     B
 end
@@ -42,10 +42,10 @@ function B_up_τ_β(τ)
     B
 end
 
-function B_down_τ_β(τ)
+function B_dn_τ_β(τ)
     B = I
     for τp in τ+1:n_τ
-        B = B_down(τp) * B
+        B = B_dn(τp) * B
     end
     B
 end
@@ -69,7 +69,7 @@ function B_up_0_τ_udv(τ)
     (U, D, V)
 end
 
-function B_down_0_τ_udv(τ)
+function B_dn_0_τ_udv(τ)
     if τ == 0
         return (I, I, I)
     end
@@ -97,7 +97,7 @@ function B_up_τ_β_vdu(τ)
     (V, D, U)
 end
 
-function B_down_τ_β_vdu(τ)
+function B_dn_τ_β_vdu(τ)
     if τ == n_τ
         return (I, I, I)
     end
