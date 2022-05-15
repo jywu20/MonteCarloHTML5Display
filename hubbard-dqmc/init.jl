@@ -1,98 +1,74 @@
-# Calculate some intermediate contstants.
+function HubbardDQMC(::Type{L}, lattice::L, t::Float64, U::Float64, β::Float64, n_τ::Int64, n_wrap::Int64; 
+    s = nothing) where {L <: AbstractLattice}
+    Δτ = β / n_τ
+    α = acosh(exp(Δτ * U / 2))
 
-# The time step in path integral
-Δτ = β / n_τ
+    n_sites = lattice.n_sites
+    neighbor_list = lattice.neighbor_list
+    inverse_list = lattice.inverse_list
+    site_list = lattice.site_list
 
-α = acosh(exp(Δτ * U / 2))
-
-# We are working on a two dimensional lattice.
-n_sites = n_side^2
-
-lattice = SquareLattice2D(n_side)
-
-log_path = path * "log"
-observables_path = path * "observables"
-error_path = path * "error"
-
-#region The kinetic Hamiltonian
-
-T_kin = zeros((n_sites, n_sites))
-
-for i in 1:n_sites
-    for nn in lattice.neighbor_list_indices[1]
-        T_kin[i, lattice.neighbor_list[i, nn]] = 1.0
-    end
-end
-T_kin = - t * T_kin
-
-#endregion
-
-#####################################################################################################
-# Initialize the system configuration.
-
-# What imaginary time step are we at now. Ranging from 1 to n_τ
-τ_now = 1
-
-# The auxiliary field. The first index is the imaginary time, the second index labels sites.
-s_τ = rand((-1, 1), n_τ, n_sites)
-
-# Stroed B-matrices, to avoid unncessisary calculations.
-B_up_storage = zeros(n_sites, n_sites, n_τ)
-B_down_storage = zeros(n_sites, n_sites, n_τ)
-
-for τ in 1 : n_τ
-    B_up_storage[:, :, τ] = B_up(τ)
-    B_down_storage[:, :, τ] = B_dn(τ)
-end
-
-# The Green functions of the current time τ.
-G_up = G_up_τ(τ_now)
-G_dn = G_dn_τ(τ_now)
-
-# Counts how many times have `propag_forward` and `propag_backward` been invoked.
-# If it reaches n_wrap, then Green functions will be calculated from B-matrices, and the counter is set back to 0.
-wrap_count = 0
-
-#####################################################################################################
-# Logging.
-
-function init_logging()
-    open(log_path, "w") do log_file
-        println(log_file, "Welcome to a simple DQMC simulation of Hubbard model.")
-        println(log_file)
-
-        # Print parameters used in the simulation.
-        println(log_file, "We are simulating with")
-        println(log_file, "  t      =   $(string(t))")
-        println(log_file, "  U      =   $(string(U))")
-        println(log_file, "  beta   =   $(string(β))")
-        println(log_file, "  dtau   =   $(string(Δτ))")
-        println(log_file, "  alpha  =   $(string(α))")
-        println(log_file, "on a $n_side * $n_side 2d lattice and with $n_τ time steps.")
-
-        if double_check
-            println(log_file)
-            println(log_file, "Double checking is on. During the calculation, the program double-checks the error between the optimized version of B-matrices, Green functions, etc. and their by-definition values.")
-            println(log_file, "This can be extremly slow. Turn off the marker when scaling up.")
-            println(log_file)
-        end
-
-        println(log_file, "Initialization completed.")
-    end
+    # The Green functions are initialized as zeros
+    #G_up = zeros(n_sites, n_sites, n_imtimes)
+    #G_dn = zeros(n_sites, n_sites, n_imtimes)
     
-    if double_check
-        open(error_path, "w") do error_file
-            println(error_file, "numerical error found in the double-check process")
+    # If no initial configuration is passed into this constructor, we use a random one
+    if s === nothing
+        s = rand((-1, 1), (n_τ, n_sites))
+    end
+
+    # Building the kinetic energy matrix
+    T = zeros(Float64, (n_sites, n_sites))
+
+    for i in 1:n_sites
+        # Nearest hopping 
+        for nn in lattice.neighbor_list_indices[1]
+            T[i, neighbor_list[i, nn]] = - t
         end
     end
 
-    open(observables_path, "w") do observable_file
-        println(observable_file, "Observables:")
-    end
-end
+    id = Matrix{Float64}(I, n_sites, n_sites)
 
-function dqmc_log(content::String)
-    open(log_path, "a") do log_file
-        println(log_file, content)
+    #plaquette_sites = zeros(Int64, (2, Int64(n_sites / 4)))
+    #
+    #first_class_count = 1
+    #second_class_count = 1
+    #
+    #for site_idx in 1 : n_sites
+    #    i, j = site_list[site_idx, :]
+    #    if i % 2 == 1 && j % 2 == 1
+    #        plaquette_sites[1, first_class_count] = inverse_list[i, j]
+    #        first_class_count += 1
+    #    elseif i % 2 == 0 && j % 2 == 0
+    #        plaquette_sites[2, second_class_count] = inverse_list[i, j]
+    #        second_class_count += 1
+    #    end
+    #end
+
+    # exp_kinetic_mat = I
+    #for m in [1, 2]
+    #    for n in 1:Int64(n_sites/4)
+    #        i1 = plaquette_sites[m, n]
+    #        i2 = neighbor_list[i1, 1]
+    #        i3 = neighbor_list[i1, 5]
+    #        i4 = neighbor_list[i1, 2]
+    #        exp_kinetic_mat = exp_kinetic_mat * exp_two_hot_sym_mat(Δτ, (i1, i2), id)
+    #        exp_kinetic_mat = exp_kinetic_mat * exp_two_hot_sym_mat(Δτ, (i2, i3), id)
+    #        exp_kinetic_mat = exp_kinetic_mat * exp_two_hot_sym_mat(Δτ, (i3, i4), id)
+    #        exp_kinetic_mat = exp_kinetic_mat * exp_two_hot_sym_mat(Δτ, (i4, i1), id)
+    #    end
+    #end
+
+    # Stroed B-matrices, to avoid unncessisary calculations.
+    B_up_storage = zeros(n_sites, n_sites, n_τ)
+    B_dn_storage = zeros(n_sites, n_sites, n_τ)
+
+    model = HubbardDQMC(t, U, β, Δτ, n_τ, n_wrap, α, lattice, s, T, id, B_up_storage, B_dn_storage)
+
+    for τ in 1 : n_τ
+        B_up_storage[:, :, τ] = B_up(model, τ)
+        B_dn_storage[:, :, τ] = B_dn(model, τ)
     end
+
+    model
 end

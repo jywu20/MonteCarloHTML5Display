@@ -3,7 +3,7 @@
 # Constants in model Hamiltonian
 # The model Hamiltonian is H = - t ∑_{i, σ} c†_{iσ} c_{iσ} + U \sum_i (n_{i↑} - 1/2) (n_{i↓} - 1/2)
 t = 1.0
-U = 8.0
+U = 4.0
 
 #####################################################################################################
 
@@ -24,22 +24,17 @@ n_sweep = 100
 n_wrap = 20
 
 # Decide whether error tracking is performed
-double_check = false
+double_check = false 
 
 #####################################################################################################
-
-# IO control
-path = "D:/Projects/Modern Physics Experiments/HTML5/hubbard-dqmc/"
 
 # Whether to show progress bar
 show_progress = true
 
 # Whether to only show binned data.
-binned_only = false
+show_binned_only = false
 
 # Whether to show standard error in each bin.
 show_bin_std = true 
-
-init_log = true
 
 #####################################################################################################

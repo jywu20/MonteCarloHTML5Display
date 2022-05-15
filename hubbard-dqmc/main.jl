@@ -1,31 +1,64 @@
 using LinearAlgebra
 using ProgressMeter
 using Statistics
+using Printf
 
-include("utils.jl")
+include("lib.jl")
+
 include("config.jl")
-include("lattice.jl")
-include("b-matrix.jl")
-include("green.jl")
-include("update.jl")
-
 include("observe.jl")
 
-include("init.jl")
+#region Initial logging
 
-if init_log
-    init_logging()
+println("Welcome to a simple DQMC simulation of Hubbard model.")
+println()
+
+lattice = SquareLattice2D(n_side)
+model = HubbardDQMC(SquareLattice2D, lattice, t, U, β, n_τ, n_wrap)
+
+println("Initialization completed.")
+
+# Print parameters used in the simulation.
+println("We are simulating with")
+println("  t      =   $(string(t))")
+println("  U      =   $(string(U))")
+println("  beta   =   $(string(β))")
+println("  dtau   =   $(string(model.Δτ))")
+println("  alpha  =   $(string(model.α))")
+println("on a $n_side * $n_side 2d lattice and with $n_τ time steps.")
+
+if double_check
+    println()
+    println("Double checking is on. During the calculation, the program double-checks the error between the optimized version of B-matrices, Green functions, etc. and their by-definition values.")
+    println("This can be extremly slow. Turn off the marker when scaling up.")
+    println()
 end
 
-include("core.jl")
+if double_check
+    println("numerical error found in the double-check process")
+end
 
-dqmc_log("Heating up for $heating_up_steps steps.")
-sweep(heating_up_steps, true)
-dqmc_log("Heating up completed.")
-dqmc_log("")
+#endregion
+
+#region Heating up
+
+println("Heating up for $heating_up_steps steps.")
+sweep!(model, heating_up_steps)
+println("Heating up completed.")
+println("")
+
+#endregion
+
+#region Sweeping
 
 for bin_count in 1 : n_bin
-    sweep(n_sweep, false)
+    println("Observables:")
+    println("====================================================")
+    println("E_kin            double_occ    magnetization")
+    println("====================================================")
+    sweep!(model, n_sweep; observe = observe)
+    println("Bin $bin_count completed.")
     binning()
-    dqmc_log("Bin $bin_count completed.")
 end
+
+#endregion
