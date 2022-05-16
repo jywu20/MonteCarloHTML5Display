@@ -1,7 +1,3 @@
-function relative_err(m1, m2)
-    norm(m1 - m2, 2) / norm(m1, 2)
-end
-
 # Calculating B-matrices by definition.
 
 #####################################################################################################

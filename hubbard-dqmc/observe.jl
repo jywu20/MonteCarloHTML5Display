@@ -1,11 +1,14 @@
 include("defs.jl")
 
+E_kin_bin = Float64[]
+mott_bin = Float64[]
+mag_bin = Float64[]
+
 E_kin_data = Float64[]
 mott_data = Float64[]
 mag_data = Float64[]
 
 function observe(model::HubbardDQMC, G_up::Matrix{Float64}, G_dn::Matrix{Float64})
-    println("observed")
     if double_check
         # Errors between propagated Green functions and Green functions calculated from definition:
         println(relative_err(G_up_τ(model, n_τ), G_up))
@@ -74,5 +77,12 @@ function binning()
         println("mag        =   $(mean(mag_data)) ")
     end
 
+    push!(E_kin_bin, mean(E_kin_data))
+    push!(mott_bin, mean(mott_data))
+    push!(mag_bin, mean(mag_data))
+
+    empty!(E_kin_data)
+    empty!(mott_data)
+    empty!(mag_data)
     println()
 end

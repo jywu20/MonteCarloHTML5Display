@@ -20,7 +20,7 @@ n_side = 4
 # Controlling heating-up times, sweeping times and bin number
 heating_up_steps = 0
 n_bin = 1
-n_sweep = 100
+n_sweep = 20
 n_wrap = 20
 
 # Decide whether error tracking is performed

@@ -6,7 +6,6 @@ using Printf
 include("lib.jl")
 
 include("config.jl")
-include("observe.jl")
 
 #region Initial logging
 
@@ -51,6 +50,8 @@ println("")
 
 #region Sweeping
 
+include("observe.jl")
+
 for bin_count in 1 : n_bin
     println("Observables:")
     println("====================================================")
@@ -60,5 +61,13 @@ for bin_count in 1 : n_bin
     println("Bin $bin_count completed.")
     binning()
 end
+
+println()
+println()
+println("Binning results:")
+println("-------------------------------------------------------------")
+println("E_kin      =   $(mean(E_kin_bin)) ± $(std(E_kin_bin))")
+println("double_occ =   $(mean(mott_bin)) ± $(std(mott_bin))")
+println("mag        =   $(mean(mag_bin)) ± $(std(mag_bin))")
 
 #endregion

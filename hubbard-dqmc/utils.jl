@@ -14,3 +14,7 @@ function exp_two_hot_sym_mat(val, pos, id)
     result[j, i] = sinh(val)
     result
 end
+
+function relative_err(m1, m2)
+    norm(m1 - m2, 2) / norm(m1, 2)
+end
