@@ -14,25 +14,15 @@ model = HubbardDQMC(SquareLattice2D, lattice, t, U, β, n_τ, n_wrap, s = s)
 
 ##
 
-"""
-In-situ diagm(exp.(α * s_τ[τ, :])) * m
-"""
-function lmul_exp_V!(model::HubbardDQMC, τ, m)
-    α = model.α
-    s_τ = model.s
-    lmul!(Diagonal(exp.(α * s_τ[τ, :])), m)
-end
+α = model.α
+s_τ = model.s
+τ = 4
+id = model.id
+A = rand(size(id)...)
 
-"""
-In-situ m * diagm(exp.(- α * s_τ[τ, :]))
-"""
-function rmul_exp_mV!(model::HubbardDQMC, τ, m)
-    α = model.α
-    s_τ = model.s
-    rmul!(m, Diagonal(exp.(- α * s_τ[τ, :])))
-end
+@time diagm(exp.(- α * s_τ[τ, :])) * A 
+##
 
-
+@time lmul_exp_mV!(model, τ, A)
 
 ## 
-# The speed of diagonal product 

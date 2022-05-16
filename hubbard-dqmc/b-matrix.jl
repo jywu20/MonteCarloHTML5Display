@@ -1,6 +1,4 @@
-# Single-τ B-matrix
-# Possible optimization:
-# - Checkboard decomposition
+#region Definitions
 
 function B_up(model::HubbardDQMC, τ)
     α = model.α
@@ -130,3 +128,121 @@ function B_dn_τ_β_vdu(model::HubbardDQMC, τ)
     end
     (V, D, U)
 end
+
+#endregion
+
+#region Multiplication of exp(±V)
+
+"""
+In-situ diagm(exp.(α * s_τ[τ, :])) * m
+"""
+function lmul_exp_V!(model::HubbardDQMC, τ, m)
+    α = model.α
+    s_τ = model.s
+    lmul!(Diagonal(exp.(α * s_τ[τ, :])), m)
+end
+
+"""
+In-situ diagm(exp.(- α * s_τ[τ, :])) * m
+"""
+function lmul_exp_mV!(model::HubbardDQMC, τ, m)
+    α = model.α
+    s_τ = model.s
+    lmul!(Diagonal(exp.(- α * s_τ[τ, :])), m)
+end
+
+"""
+In-situ m * diagm(exp.(α * s_τ[τ, :]))
+"""
+function rmul_exp_V!(model::HubbardDQMC, τ, m)
+    α = model.α
+    s_τ = model.s
+    rmul!(m, Diagonal(exp.(α * s_τ[τ, :])))
+end
+
+"""
+In-situ m * diagm(exp.(- α * s_τ[τ, :]))
+"""
+function rmul_exp_mV!(model::HubbardDQMC, τ, m)
+    α = model.α
+    s_τ = model.s
+    rmul!(m, Diagonal(exp.(- α * s_τ[τ, :])))
+end
+
+#endregion
+
+#region Multiplication of exp(±T)
+
+"""
+In-situ exp(Δτ * T) * m
+"""
+function lmul_exp_T!(model::HubbardDQMC, m)
+    copy!(m, model.expT * m)
+end
+
+"""
+In-situ exp(- Δτ * T) * m
+"""
+function lmul_exp_mT!(model::HubbardDQMC, m)
+    copy!(m, model.expmT * m)
+end
+
+"""
+In-situ m * exp(Δτ * T) 
+"""
+function rmul_exp_T!(model::HubbardDQMC, m)
+    copy!(m, m * model.expT)
+end
+
+"""
+In-situ m * exp(- Δτ * T) 
+"""
+function rmul_exp_mT!(model::HubbardDQMC, m)
+    copy!(m, m * model.expmT)
+end
+
+#endregion
+
+#region 
+
+function lmul_B_up!(model::HubbardDQMC, τ, m)
+    lmul_exp_mT!(model, m)
+    lmul_exp_V!(model, τ, m)
+end
+
+function lmul_B_dn!(model::HubbardDQMC, τ, m)
+    lmul_exp_mT!(model, m)
+    lmul_exp_mV!(model, τ, m)
+end
+
+function lmul_B_up_inv!(model::HubbardDQMC, τ, m)
+    lmul_exp_mV!(model, τ, m)
+    lmul_exp_T!(model, m)
+end
+
+function lmul_B_dn_inv!(model::HubbardDQMC, τ, m)
+    lmul_exp_V!(model, τ, m)
+    lmul_exp_T!(model, m)
+end
+
+function rmul_B_up!(model::HubbardDQMC, τ, m)
+    rmul_exp_V!(model, τ, m)
+    rmul_exp_mT!(model, m)
+end
+
+function rmul_B_dn!(model::HubbardDQMC, τ, m)
+    rmul_exp_mV!(model, τ, m)
+    rmul_exp_mT!(model, m)
+end
+
+function rmul_B_up_inv!(model::HubbardDQMC, τ, m)
+    rmul_exp_T!(model, m)
+    rmul_exp_mV!(model, τ, m)
+end
+
+function rmul_B_dn_inv!(model::HubbardDQMC, τ, m)
+    rmul_exp_T!(model, m)
+    rmul_exp_V!(model, τ, m)
+end
+
+#endreion

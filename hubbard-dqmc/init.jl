@@ -8,10 +8,6 @@ function HubbardDQMC(::Type{L}, lattice::L, t::Float64, U::Float64, β::Float64,
     inverse_list = lattice.inverse_list
     site_list = lattice.site_list
 
-    # The Green functions are initialized as zeros
-    #G_up = zeros(n_sites, n_sites, n_imtimes)
-    #G_dn = zeros(n_sites, n_sites, n_imtimes)
-    
     # If no initial configuration is passed into this constructor, we use a random one
     if s === nothing
         s = rand((-1, 1), (n_τ, n_sites))
@@ -63,7 +59,14 @@ function HubbardDQMC(::Type{L}, lattice::L, t::Float64, U::Float64, β::Float64,
     B_up_storage = zeros(n_sites, n_sites, n_τ)
     B_dn_storage = zeros(n_sites, n_sites, n_τ)
 
-    model = HubbardDQMC(t, U, β, Δτ, n_τ, n_wrap, α, lattice, s, T, id, B_up_storage, B_dn_storage)
+    model = HubbardDQMC(t, U, β, 
+    Δτ, n_τ, 
+    n_wrap, 
+    α, 
+    lattice, s, 
+    T, exp(Δτ * T), exp(- Δτ * T), 
+    id, 
+    B_up_storage, B_dn_storage)
 
     for τ in 1 : n_τ
         B_up_storage[:, :, τ] = B_up(model, τ)

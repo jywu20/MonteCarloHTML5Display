@@ -23,8 +23,12 @@ function sweep!(model::HubbardDQMC, n_sweep::Int64; observe = nothing)
             # Propagate forward.
             wrap_count += 1
             τ_now += 1
-            copy!(G_up, B_up(model, τ_now) * G_up * B_up_inv(model, τ_now))
-            copy!(G_dn, B_dn(model, τ_now) * G_dn * B_dn_inv(model, τ_now))
+            #copy!(G_up, B_up(model, τ_now) * G_up * B_up_inv(model, τ_now))
+            lmul_B_up!(model, τ_now, G_up)
+            rmul_B_up_inv!(model, τ_now, G_up)
+            #copy!(G_dn, B_dn(model, τ_now) * G_dn * B_dn_inv(model, τ_now))
+            lmul_B_dn!(model, τ_now, G_dn)
+            rmul_B_dn_inv!(model, τ_now, G_dn)
 
             if wrap_count == n_wrap
                 wrap_count = 0
@@ -46,8 +50,12 @@ function sweep!(model::HubbardDQMC, n_sweep::Int64; observe = nothing)
             
             # Propagate backward
             wrap_count += 1
-            copy!(G_up, B_up_inv(model, τ_now) * G_up * B_up(model, τ_now))
-            copy!(G_dn, B_dn_inv(model, τ_now) * G_dn * B_dn(model, τ_now))
+            # copy!(G_up, B_up_inv(model, τ_now) * G_up * B_up(model, τ_now))
+            lmul_B_up_inv!(model, τ_now, G_up)
+            rmul_B_up!(model, τ_now, G_up)
+            # copy!(G_dn, B_dn_inv(model, τ_now) * G_dn * B_dn(model, τ_now))
+            lmul_B_dn_inv!(model, τ_now, G_dn)
+            rmul_B_dn!(model, τ_now, G_dn)
             τ_now -= 1
         
             if wrap_count == n_wrap
