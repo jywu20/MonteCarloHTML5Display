@@ -1,5 +1,3 @@
-include("defs.jl")
-
 E_kin_bin = Float64[]
 mott_bin = Float64[]
 mag_bin = Float64[]

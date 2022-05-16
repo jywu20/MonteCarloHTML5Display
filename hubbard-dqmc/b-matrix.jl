@@ -15,7 +15,7 @@ function B_up_inv(model::HubbardDQMC, τ)
     s_τ = model.s
     Δτ = model.Δτ
     T_kin = model.T
-    exp(Δτ * T_kin) * diagm(- exp.(α * s_τ[τ, :]))
+    exp(Δτ * T_kin) * diagm(exp.(- α * s_τ[τ, :]))
 end
 
 function B_dn(model::HubbardDQMC, τ)

@@ -1,3 +1,5 @@
+using LinearAlgebra
+
 include("utils.jl")
 include("lattice.jl")
 

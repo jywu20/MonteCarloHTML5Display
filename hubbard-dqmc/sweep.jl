@@ -23,8 +23,8 @@ function sweep!(model::HubbardDQMC, n_sweep::Int64; observe = nothing)
             # Propagate forward.
             wrap_count += 1
             τ_now += 1
-            copy!(G_up, B_up(model, τ_now) * G_up * inv(B_up(model, τ_now)))
-            copy!(G_dn, B_dn(model, τ_now) * G_dn * inv(B_dn(model, τ_now)))
+            copy!(G_up, B_up(model, τ_now) * G_up * B_up_inv(model, τ_now))
+            copy!(G_dn, B_dn(model, τ_now) * G_dn * B_dn_inv(model, τ_now))
 
             if wrap_count == n_wrap
                 wrap_count = 0
