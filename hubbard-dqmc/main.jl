@@ -41,22 +41,30 @@ end
 
 #region Heating up
 
+println()
 println("Heating up for $heating_up_steps steps.")
 sweep!(model, heating_up_steps)
 println("Heating up completed.")
-println("")
+println()
 
 #endregion
 
 #region Sweeping
 
+function observable_table_head()
+    println("========================================================")
+    println("E_kin            double_occ      magnetization")
+    println("========================================================")
+end
+
 include("observe.jl")
 
 for bin_count in 1 : n_bin
     println("Observables:")
-    println("====================================================")
-    println("E_kin            double_occ    magnetization")
-    println("====================================================")
+    if ! show_binned_only
+        observable_table_head()
+    end
+    
     sweep!(model, n_sweep; observe = observe)
     println("Bin $bin_count completed.")
     binning()
@@ -64,7 +72,18 @@ end
 
 println()
 println()
+println("Bin average data:")
+observable_table_head()
+for bin_count in 1 : n_bin
+    k_e = E_kin_bin[bin_count]
+    mott = mott_bin[bin_count]
+    mag = mag_bin[bin_count]
+    @printf "%.10f    %.10f    %.10f \n" k_e mott mag
+end
+
+println()
 println("Binning results:")
+
 println("-------------------------------------------------------------")
 println("E_kin      =   $(mean(E_kin_bin)) ± $(std(E_kin_bin))")
 println("double_occ =   $(mean(mott_bin)) ± $(std(mott_bin))")

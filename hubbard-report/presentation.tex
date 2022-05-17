@@ -1,0 +1,202 @@
+\documentclass[UTF8]{ctexbeamer}
+\usepackage{physics}
+\usepackage{amsmath, amssymb, mathtools}
+\usepackage{tikz}
+\usepackage{mathdots}
+\usepackage{yhmath}
+\usepackage{cancel}
+\usepackage{color}
+\usepackage{siunitx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{amssymb}
+\usepackage{textcomp, gensymb}
+\usepackage{tabularx}
+\usepackage{extarrows}
+\usepackage{booktabs}
+\usetikzlibrary{fadings}
+\usetikzlibrary{patterns}
+\usetikzlibrary{shadows.blur}
+\usetikzlibrary{shapes}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\DeclareMathOperator{\ee}{e}
+
+%Information to be included in the title page:
+\title{Hubbard模型的行列式蒙特卡洛模拟}
+\author{吴晋渊 18307110155}
+\institute{复旦大学物理学系}
+\date{2021}
+
+\usetheme{Madrid}
+
+\newcommand{\concept}[1]{\textbf{#1}}
+\newcommand{\pair}[1]{\langle #1 \rangle}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{二维正方晶格Hubbard模型}
+
+Hubbard模型
+\begin{equation}
+    H = - t\sum_{\pair{\vb*{i}, \vb*{j}}} c^\dagger_{\vb*{i} \sigma} c_{\vb*{j} \sigma} + U \sum_{\vb*{i}} n_{\vb*{i} \uparrow} n_{\vb*{j} \downarrow}
+\end{equation}    
+\begin{itemize}
+    \item 最为著名的强关联电子模型
+    \begin{itemize}
+        \item 半填充$\Rightarrow$海森堡模型
+        \item 掺杂$\Rightarrow$t-J模型：可能的高温超导机制，类似于铜基超导的赝能隙
+    \end{itemize}
+    \item 不可能解析研究（高维无Bethe ansatz可用，微扰论失效），需要蒙特卡洛模拟
+    \begin{itemize}
+        \item 量子系统，无离散场构型 $\Rightarrow$ 解决方案：离散路径积分，引入$N$个虚时间点，做Trotter分解，$d$维量子系统=$d+1$维经典统计系统
+        \begin{equation}
+            \begin{aligned}
+                Z &= \trace \ee^{- \beta H} = \sum_{\{ \sigma_1, \ldots, \sigma_N \}} \prod_{n} \mel{\sigma_n}{\ee^{- \Delta \tau H}}{\sigma_{n+1}} \\
+                &= \sum_\sigma \prod_n \ee^{- \Delta \tau H[\sigma_n, \sigma_{n+1}]}.
+            \end{aligned}
+        \end{equation}
+        \item 费米子算符无经典对应 $\Rightarrow$ 设法把费米子自由度变成玻色自由度
+    \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{朴素的DQMC}
+
+离散Hubbard-Stratonovich变换
+\begin{itemize}
+    \item 用玻色场取代费米场
+    \item 物理图像：用每个格点上的总自旋（或者别的费米算符二次型）取代费米自由度
+    \begin{equation}
+        \ee^{-\Delta \tau U \sum_{\vb*{i}} (n_{\vb*{i} \uparrow} - 1/2) (n_{\vb*{j} \downarrow} - 1/2)} \simeq \text{const} \times \sum_{s_1, s_2, \ldots, s_n = \pm 1} \ee^{\alpha \sum_{\vb*{i}} s_{\vb*{i}} ({n}_{\vb*{i} \uparrow} - {n}_{\vb*{i} \downarrow})},
+    \end{equation}
+    \begin{equation}
+        N \Delta \tau = \beta, \quad \cosh(\alpha) = \ee^{\Delta \tau U / 2}.
+    \end{equation}
+    \item 随后可以“积掉”电子自由度，只留下$s_{\vb*{i}, \tau}$
+    \item 这个方法称为\concept{determinant quantum Monte Carlo (DQMC)}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{朴素的的DQMC}
+
+\begin{itemize}
+    \item 定义
+    \begin{equation}
+        \vb{B}^{\sigma}_{\vb{s}}(\tau) = \ee^{\sigma \alpha \ \mathrm{diag}{\vb{s}_\tau}} \ee^{- \Delta \tau \vb{T}}, \quad \mathbf{B}^\sigma_{\mathbf{s}}\left(\tau_{2}, \tau_{1}\right)=\prod_{n=n_{1}+1}^{n_{2}} \vb{B}^{\sigma}_{\vb{s}}(\tau), 
+    \end{equation}
+    其中$\sigma = \uparrow, \downarrow \coloneqq \pm 1$，$\vb{s}_{\tau} = [s_{\vb*{i}, \tau}]$，$\vb{s}$为一个$\{s_{\vb*{i}, \tau}\}$构型的简写
+    \item 可推导出配分函数（用于计算接受率，DQMC的命名由来）
+    \begin{equation}
+        Z = \sum_{\vb{s}} Z[\vb{s}], \quad Z[\vb{s}] = \det(1 + \prod_{\sigma=\uparrow, \downarrow} \prod_{n=1}^m \vb{B}_{\vb{s}}^\sigma(\tau) ),
+    \end{equation}
+    \item 以及等时格林函数（用于计算物理量期望值）
+    \begin{equation}
+        \vb{G}^\sigma_{\vb*{i} \vb*{j}}(\tau) = \expval*{c_{\vb*{i} \sigma} c^\dagger_{\vb*{j} \sigma}}_\tau = \left(1+\mathbf{B}^\sigma_{\mathbf{s}}(\tau, 0) \mathbf{B}^\sigma_{\mathbf{s}}(\beta, \tau)\right)^{-1}_{\vb*{i}, \vb*{j}}.
+    \end{equation}
+    \item 计算$\vb{B}^\sigma(\tau_1, \tau_2)$时由于有连乘，需要做数值稳定
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{朴素的DQMC}
+
+\begin{center}
+    \includegraphics[width=\textwidth]{naive-dqmc.pdf}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{基于格林函数的DQMC}
+
+\begin{itemize}
+    \item 朴素DQMC性能开销大头：$\vb{B}(\tau_1, \tau_2)$矩阵连乘
+    \item 虚时间点$\tau$，空间格点$\vb*{i}$处发生一次更新，则$\vb{B}$矩阵只有如下变化：
+    \begin{equation}
+        \mathbf{B}^\sigma_{\mathbf{s}^{\prime}}(\tau)=\left(1+\vb{\Delta}^{\vb*{i}, \sigma}\right) \mathbf{B}^\sigma_{\mathbf{s}}(\tau),
+    \end{equation}
+    其中$\vb{\Delta}^{\vb*{i}, \sigma}$对角，除了$\vb*{i}$号元素为$\ee^{-2 \sigma \alpha s_{\vb*{i}, \tau}} - 1$外其余为零
+    \item 可以手动推导出
+    \begin{equation}
+        R = \prod_{\sigma = \uparrow, \downarrow} \underbrace{\det(1 + \vb{\Delta}^{\vb*{i}, \sigma} (1 - \vb{G}^\sigma_{\vb{s}}(\tau)))}_{R^\sigma},
+        \label{eq:accept-rate}
+    \end{equation}   
+    \begin{equation}
+        \vb{G}^\sigma_{\vb{s}'}(\tau) = \vb{G}^\sigma_{\vb{s}}(\tau) - \frac{1}{R^\sigma} \vb{G}^\sigma_{\vb{s}}(\tau) \vb{\Delta}^{\vb*{i}, \sigma} (1 - \vb{G}^\sigma_{\vb{s}}(\tau)).
+        \label{eq:green-function-update}
+    \end{equation}
+    \item 接受率的计算和格林函数的更新其实无需$\vb{B}$矩阵！
+    \item 可以将格林函数作为system configuration的一部分，初始化时从$\vb{s}$计算一次，之后似乎不必再计算任何$\vb{B}$矩阵连乘
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{朴素DQMC}
+
+物理量期望值为
+\begin{equation}
+    \expval*{O} = \sum_{\vb{s}} p(\vb{s}) \expval*{O}_{\vb{s}},
+\end{equation}    
+$p(\vb{s})$通过蒙特卡洛采样，而$\expval*{O}_{\vb{s}}$遵从Wick定理
+
+\begin{itemize}
+    \item 双占据：
+    \begin{equation}
+        \expval*{n_{\vb*{i} \uparrow} n_{\vb*{i} \downarrow}}_{\vb{s}} = (1 - \expval*{c_{\vb*{i} \uparrow} c^\dagger_{\vb*{i} \uparrow}}_{\vb{s}})  (1 - \expval*{c_{\vb*{i} \downarrow} c^\dagger_{\vb*{i} \downarrow}}_{\vb{s}}).
+    \end{equation}
+    \item 磁化关联函数：
+    \begin{equation}
+        \begin{aligned}
+            \expval*{s^z_{\vb*{i}} s^z_{\vb*{j}}}_{\vb{s}} &= \frac{1}{4} \expval*{(c^\dagger_{\vb*{i} \uparrow} c_{\vb*{i} \uparrow} - c^\dagger_{\vb*{i} \downarrow} c_{\vb*{i} \downarrow}) ((c^\dagger_{\vb*{j} \uparrow} c_{\vb*{j} \uparrow} - c^\dagger_{\vb*{j} \downarrow} c_{\vb*{j} \downarrow}))}_{\vb{s}} \\
+            &= 
+        \end{aligned}
+    \end{equation}
+    \begin{equation}
+        \expval*{S_\text{AFM}}_{\vb{s}} = \frac{1}{L^2} \sum_{\vb*{i}, \vb*{j}} 
+    \end{equation}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{基于格林函数的DQMC}
+
+算法纲要：
+\begin{itemize}
+    \item 系统构型：$\vb{s}$，目前所处的虚时间点$\tau$，$\tau$处的格林函数$\vb{G}^\sigma$
+    \item 初始化：初始$s_{\vb*{i}, \tau}$构型，计算各虚时间点的格林函数
+    \item 给定$\tau$，翻转$s_{\vb*{i}, \tau}$：接受率为\eqref{eq:accept-rate}，如果成功，将$s_{\vb*{i}, \tau}$变更正负号，并且用\eqref{eq:green-function-update}计算新的$\vb{G}^\sigma(\tau)$，$\vb{G}^\sigma \leftarrow \vb{G}^\sigma_{\vb{s}'}(\tau)$
+    \item 已经完成$\tau$点处全部格点的翻转，使用
+    \begin{equation}
+        \vb{G}^\sigma(\tau + \Delta \tau) = \vb{B}^\sigma(\tau + \Delta \tau) \vb{G}^\sigma(\tau) \vb{B}^\sigma(\tau + \Delta \tau)^{-1}
+    \end{equation}
+    从$\tau$点转移到$\tau \pm \Delta \tau$点，$\vb{G}^\sigma \leftarrow \vb{G}^\sigma(\tau \pm \Delta \tau)$，$\tau \leftarrow \tau \pm \Delta \tau$，然后去翻转新的$\tau$处的$s_{\vb*{i}, \tau}$
+    \item 一个sweep：
+\end{itemize}
+
+\begin{center}
+    \includegraphics[width=0.7\textwidth]{sweeping.pdf}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{格林函数DQMC}
+
+进一步的改进：
+
+
+\end{frame}
+
+\end{document}
