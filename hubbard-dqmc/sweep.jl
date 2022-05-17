@@ -15,7 +15,7 @@ function sweep!(model::HubbardDQMC, n_sweep::Int64; observe = nothing)
     for _ in 1 : n_sweep
         for _ in 1 : n_τ - 1
             for i in 1 : n_sites
-                if rand() < accept_rate(model, τ_now, i)
+                if rand() < accept_rate(model, G_up, G_dn, τ_now, i)
                     G_update(model, G_up, G_dn, τ_now, i)
                 end
             end
@@ -43,7 +43,7 @@ function sweep!(model::HubbardDQMC, n_sweep::Int64; observe = nothing)
         
         for _ in 1 : n_τ - 1
             for i in 1 : n_sites
-                if rand() < accept_rate(model, τ_now, i)
+                if rand() < accept_rate(model, G_up, G_dn, τ_now, i)
                     G_update(model, G_up, G_dn, τ_now, i)
                 end
             end

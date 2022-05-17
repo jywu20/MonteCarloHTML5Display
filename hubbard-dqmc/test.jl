@@ -25,4 +25,32 @@ A = rand(size(id)...)
 
 @time lmul_exp_mV!(model, τ, A)
 
-## 
+##
+
+@time sweep_old!(model, 4)
+@time sweep!(model, 4)
+nothing
+
+##
+
+let 
+    id = copy(model.id)
+    τ = 7
+    A1 = rand(size(id)...)
+    A2 = copy(A1)
+   
+    @time begin
+        lmul_B_up!(model, τ, A1)
+        rmul_B_up_inv!(model, τ, A1)
+    end 
+    @time B_up(model, τ) * A2 * B_up_inv(model, τ)
+    nothing
+end
+
+##
+
+@profview sweep!(model, 4)
+
+##
+@time sweep!(model, 4)
+

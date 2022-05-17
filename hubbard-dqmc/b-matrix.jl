@@ -1,11 +1,17 @@
 #region Definitions
 
-function B_up(model::HubbardDQMC, τ)
+function B_up_def(model::HubbardDQMC, τ)
     α = model.α
     s_τ = model.s
     Δτ = model.Δτ
     T_kin = model.T
     diagm(exp.(α * s_τ[τ, :])) * exp(- Δτ * T_kin)
+end
+
+function B_up(model::HubbardDQMC, τ)
+    res = copy(model.expmT)
+    lmul_exp_V!(model, τ, res)
+    res
 end
 
 function B_up_inv(model::HubbardDQMC, τ)
@@ -16,12 +22,18 @@ function B_up_inv(model::HubbardDQMC, τ)
     exp(Δτ * T_kin) * diagm(exp.(- α * s_τ[τ, :]))
 end
 
-function B_dn(model::HubbardDQMC, τ)
+function B_dn_def(model::HubbardDQMC, τ)
     α = model.α
     s_τ = model.s
     Δτ = model.Δτ
     T_kin = model.T
     diagm(exp.(- α * s_τ[τ, :])) * exp(- Δτ * T_kin)
+end
+
+function B_dn(model::HubbardDQMC, τ)
+    res = copy(model.expmT)
+    lmul_exp_mV!(model, τ, res)
+    res
 end
 
 function B_dn_inv(model::HubbardDQMC, τ)
@@ -66,7 +78,7 @@ end
 
 function udv_decompose(m::Matrix{Float64})::Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}
     U, S, Vt = svd(m)
-    (U, diagm(S), Vt')
+    (U, Diagonal(S), Vt')
 end
 
 function B_up_0_τ_udv(model::HubbardDQMC, τ)
