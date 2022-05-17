@@ -69,7 +69,7 @@ Hubbard模型
 \begin{frame}
 \frametitle{朴素的DQMC}
 
-离散Hubbard-Stratonovich变换
+\concept{离散Hubbard-Stratonovich变换}
 \begin{itemize}
     \item 用玻色场取代费米场
     \item 物理图像：用每个格点上的总自旋（或者别的费米算符二次型）取代费米自由度
@@ -80,6 +80,9 @@ Hubbard模型
         N \Delta \tau = \beta, \quad \cosh(\alpha) = \ee^{\Delta \tau U / 2}.
     \end{equation}
     \item 随后可以“积掉”电子自由度，只留下$s_{\vb*{i}, \tau}$
+    \begin{equation}
+        \trace \ee^{- c^\dagger_i A_{ij} c_j} \ee^{- c^\dagger_i B_{ij} c_j} \cdots = \det(1 + \ee^{- \vb{A}} \ee^{- \vb{B}} \cdots).
+    \end{equation}
     \item 这个方法称为\concept{determinant quantum Monte Carlo (DQMC)}
 \end{itemize}
 
@@ -93,7 +96,7 @@ Hubbard模型
     \begin{equation}
         \vb{B}^{\sigma}_{\vb{s}}(\tau) = \ee^{\sigma \alpha \ \mathrm{diag}{\vb{s}_\tau}} \ee^{- \Delta \tau \vb{T}}, \quad \mathbf{B}^\sigma_{\mathbf{s}}\left(\tau_{2}, \tau_{1}\right)=\prod_{n=n_{1}+1}^{n_{2}} \vb{B}^{\sigma}_{\vb{s}}(\tau), 
     \end{equation}
-    其中$\sigma = \uparrow, \downarrow \coloneqq \pm 1$，$\vb{s}_{\tau} = [s_{\vb*{i}, \tau}]$，$\vb{s}$为一个$\{s_{\vb*{i}, \tau}\}$构型的简写
+    其中$\sigma = \uparrow, \downarrow \coloneqq \pm 1$，$\vb{s}_{\tau} = [s_{\vb*{i}, \tau}]$，$\vb{s}$为一个$\{s_{\vb*{i}, \tau}\}$构型的简写，$\vb{T}$为一次量子化动能矩阵
     \item 可推导出配分函数（用于计算接受率，DQMC的命名由来）
     \begin{equation}
         Z = \sum_{\vb{s}} Z[\vb{s}], \quad Z[\vb{s}] = \det(1 + \prod_{\sigma=\uparrow, \downarrow} \prod_{n=1}^m \vb{B}_{\vb{s}}^\sigma(\tau) ),
@@ -159,11 +162,12 @@ $p(\vb{s})$通过蒙特卡洛采样，而$\expval*{O}_{\vb{s}}$遵从Wick定理
     \begin{equation}
         \begin{aligned}
             \expval*{s^z_{\vb*{i}} s^z_{\vb*{j}}}_{\vb{s}} &= \frac{1}{4} \expval*{(c^\dagger_{\vb*{i} \uparrow} c_{\vb*{i} \uparrow} - c^\dagger_{\vb*{i} \downarrow} c_{\vb*{i} \downarrow}) ((c^\dagger_{\vb*{j} \uparrow} c_{\vb*{j} \uparrow} - c^\dagger_{\vb*{j} \downarrow} c_{\vb*{j} \downarrow}))}_{\vb{s}} \\
-            &= 
+            &= \frac{1}{4} (\expval*{c^\dagger_{\vb*{i} \uparrow} c_{\vb*{i} \uparrow}}_{\vb{s}} \expval*{c^\dagger_{\vb*{j} \uparrow} c_{\vb*{j} \uparrow}}_{\vb{s}}
+            + \expval*{c^\dagger_{\vb*{i} \downarrow} c_{\vb*{i} \downarrow}}_{\vb{s}} \expval*{c^\dagger_{\vb*{j} \downarrow} c_{\vb*{j} \downarrow}}_{\vb{s}} \\
+            &\quad \  + \expval*{c^\dagger_{\vb*{i} \uparrow} c_{\vb*{j} \uparrow}}_{\vb{s}} \expval*{c_{\vb*{i} \uparrow} c^\dagger_{\vb*{j} \uparrow}}_{\vb{s}} 
+            + \expval*{c^\dagger_{\vb*{i} \downarrow} c_{\vb*{j} \downarrow}}_{\vb{s}} \expval*{c_{\vb*{i} \downarrow} c^\dagger_{\vb*{j} \downarrow}}_{\vb{s}} \\
+            &\quad \  - \expval*{c^\dagger_{\vb*{i} \downarrow} c_{\vb*{i} \downarrow}}_{\vb{s}} \expval*{c^\dagger_{\vb*{j} \uparrow} c_{\vb*{j} \uparrow}}_{\vb{s}} - \expval*{c^\dagger_{\vb*{j} \downarrow} c_{\vb*{j} \downarrow}}_{\vb{s}} \expval*{c^\dagger_{\vb*{i} \uparrow} c_{\vb*{i} \uparrow}}_{\vb{s}} ).
         \end{aligned}
-    \end{equation}
-    \begin{equation}
-        \expval*{S_\text{AFM}}_{\vb{s}} = \frac{1}{L^2} \sum_{\vb*{i}, \vb*{j}} 
     \end{equation}
 \end{itemize}
 
@@ -195,7 +199,142 @@ $p(\vb{s})$通过蒙特卡洛采样，而$\expval*{O}_{\vb{s}}$遵从Wick定理
 \frametitle{格林函数DQMC}
 
 进一步的改进：
+\begin{itemize}
+    \item 通过矩阵乘法更新格林函数会导致矩阵计算误差指数放大
+    \begin{itemize}
+        \item 隔一定步数仍然需要重新计算格林函数（称为wrap）
+    \end{itemize}
+    \item 在时间点$\tau$上的更新不会影响别的虚时间点上的$\vb{B}^\sigma(\tau')$
+    \begin{itemize}
+        \item 将不同虚时间点的$\vb{B}^\sigma(\tau)$保存起来，避免在wrap的时候重复计算
+    \end{itemize}
+    \item 用$\vb{G}^\sigma(\tau)$算$\vb{G}^\sigma(\tau \pm \Delta \tau)$时需要左乘、右乘$\vb{B}^\sigma$和$(\vb{B}^\sigma)^{-1}$
+    \begin{itemize}
+        \item 求逆操作耗时长，直接使用
+        \begin{equation}
+            \vb{B}^\sigma(\tau)^{-1} = \ee^{\Delta \tau \vb{T}} \ee^{-\sigma \alpha \ \mathrm{diag}{\vb{s}_\tau}}
+        \end{equation}
+        \item $\ee^{\pm \Delta \tau \vb{T}}$计算用时长，$\vb{T}$计算过程中不变，应该预先算好
+        \item 左乘、右乘$\ee^{\pm \sigma \alpha\ \mathrm{diag} \vb{s}_\tau}$应使用为对角矩阵优化的矩阵乘法
+    \end{itemize}
+\end{itemize}
 
+\end{frame}
+
+\begin{frame}
+\frametitle{实现细节}
+
+目标：
+\begin{itemize}
+    \item 模块化、封装：避免全局变量传参数
+    \begin{itemize}
+        \item 被修改的变量、被调用的函数是非常透明的
+        \item 便于调试
+    \end{itemize}
+    \item 代码复用
+    \begin{itemize}
+        \item 可以将DQMC代码整合进更大的程序中，如研究Hubbard模型电子和Ising自旋耦合
+        \item 便于改动晶格类型
+    \end{itemize}
+\end{itemize}    
+
+\end{frame}
+
+\begin{frame}
+\frametitle{实现细节}
+
+\begin{columns}
+
+\begin{column}{0.58\textwidth}
+    将一个DQMC任务中用到的东西打包在一个结构体中，内容包括：
+    \begin{itemize}
+        \item 模型参数：$t$, $U$, $\beta$，\texttt{lattice}
+        \item 问题规模：虚时间点总数$N$（记作\texttt{n\_imtimes}），经过几个虚时间点做wrap（\texttt{n\_wrap}）
+        \item 预先算好的物理量：$\Delta \tau$, $\alpha$, $\vb{T}$, $\ee^{\Delta \tau \vb{T}}$（记作\texttt{expT}），$\ee^{- \Delta \tau \vb{T}}$（记作\texttt{expmT}）
+        \item 系统构型，包括$\vb{s}$（辅助场构型），以及$\vb{B}$矩阵
+        \item 格林函数$\vb{G}^\sigma(\tau)$不在其中
+        \begin{itemize}
+            \item 如果要有，那么目前的虚时间点也必须放在结构体\texttt{HubbardDQMC}中，而mutable struct性能不佳
+            \item 可以给\texttt{sweep}函数传回调函数来访问$\vb{G}^\sigma$
+        \end{itemize}
+    \end{itemize}
+\end{column}
+
+\begin{column}{0.42\textwidth}
+    % 取自hubbard-dqmc\lib.jl
+    \includegraphics[width=\textwidth]{hubbard-struct.PNG}
+\end{column}
+
+\end{columns}    
+
+\end{frame}
+
+\begin{frame}
+\frametitle{实现细节}
+
+\begin{columns}
+
+\begin{column}{0.6\textwidth}
+    格点信息单独定义，尽可能一般性；从1开始给每个格点编号
+    \begin{itemize}
+        \item \texttt{site\_list[i, :]}：给出\texttt{i}号格点的坐标
+        \item \texttt{inverse\_list[x, y]}：给出$(x, y)$位置处的格点的编号
+        \item \texttt{neighbor\_list[i, :]}：给出能够称为\texttt{i}号格点的近邻格点的全部格点
+        \item \texttt{neighbor\_list[ineighbor\_list\_indices[1]]}给出\texttt{i}号格点的最近邻格点，将\texttt{1}换成\texttt{2}给出次近邻格点，等等
+    \end{itemize}
+\end{column}
+
+\begin{column}{0.4\textwidth}
+    % hubbard-dqmc\lattice.jl
+    \includegraphics[width=\textwidth]{lattice-def.PNG}
+\end{column}
+
+\end{columns}    
+
+\end{frame}
+
+\begin{frame}
+\frametitle{实现细节}
+
+格点初始化示例，类似地可以定义三角格子，六角格子等：
+
+% hubbard-dqmc\lattice.jl
+\includegraphics[width=\textwidth]{lattice-initialize.PNG}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{实现细节}
+
+计算的中间步骤完全透明，通过\texttt{HubbardDQMC}结构体和其它变量传递数据
+
+\begin{center}
+    % hubbard-dqmc\update.jl
+    \includegraphics[width=\textwidth]{update-example-1.PNG}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{效果}
+
+\begin{columns}[T]
+
+\begin{column}[T]{0.4\textwidth}
+    运行界面
+    \includegraphics[width=\textwidth]{main-running.PNG}
+\end{column}
+
+\begin{column}[T]{0.4\textwidth}
+    输出结果
+    \includegraphics[width=\textwidth]{main-result.PNG}
+\end{column}
+
+\end{columns}
+
+\vspace{1em}
+
+计算结果和许霄琰老师的示例代码一致。
 
 \end{frame}
 

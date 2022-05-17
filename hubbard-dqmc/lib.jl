@@ -11,12 +11,10 @@ struct HubbardDQMC{L <: AbstractLattice}
     n_imtimes::Int64
     n_wrap::Int64
     α::Float64
-    # Currently we don't put the Green functions in the model struct, because in the sweeping process,
-    # they are dependent on τ, which shouldn't be placed into the model struct, or otherwise the code 
-    # will be rather tedious
+
     lattice::L
 
-    # s[τ, x]
+    # s[τ, i]
     s::Matrix{Int64}
 
     # T[i, j]
