@@ -85,3 +85,18 @@ let
 end
 
 #endregion
+
+#regoin Show configuration, but this time update τ, no Markov update
+
+working_path = "D:/Projects/Modern Physics Experiments/HTML5/hubbard-report/configuration-u-$(Int(U))/"
+
+##
+
+for τ in 1 : n_τ
+    heatmap(reshape(model.s[τ, :], (n_side, n_side)), 
+    c = cgrad([:orange, :blue]), legend = :none, aspect_ratio=1, 
+    xlims = (0.49, n_side + 0.5), ylims = (0.5, n_side + 0.5), dpi = 500)
+    savefig(working_path * "no-markov-evolution-tau-$τ.png")
+end
+
+#endregion

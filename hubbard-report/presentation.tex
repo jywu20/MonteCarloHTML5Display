@@ -362,7 +362,7 @@ $p(\vb{s})$通过蒙特卡洛采样，而$\expval*{O}_{\vb{s}}$遵从Wick定理
 \begin{column}{0.4\textwidth}
     \begin{itemize}
         \item 模型参数：$t=1$, $U=2$, $\beta=4$，在$6 \times 6$正方晶格上
-        \item 固定$\tau$不动，观察马尔可夫更新
+        \item 固定$\tau = 30 \Delta \tau$不动，观察马尔可夫更新
         \item 橙色和蓝色表示向上和向下自旋
     \end{itemize}
 \end{column}
@@ -377,8 +377,42 @@ $p(\vb{s})$通过蒙特卡洛采样，而$\expval*{O}_{\vb{s}}$遵从Wick定理
 
 \begin{frame}
 \frametitle{效果}
-
     
+\begin{columns}
+
+\begin{column}{0.4\textwidth}
+    \begin{itemize}
+        \item 模型参数：$t=1$, $U=2$, $\beta=4$，在$6 \times 6$正方晶格上
+        \item 不做马尔可夫更新，检查不同$\tau$处的$s_{\vb*{i} \tau}$
+        \item 橙色和蓝色表示向上和向下自旋
+    \end{itemize}
+\end{column}
+
+\begin{column}{0.6\textwidth}
+    \animategraphics[loop,autoplay,width=\textwidth]{12}{./configuration-u-2/no-markov-evolution-tau-}{1}{80}
+\end{column}
+
+\end{columns}   
+    
+\end{frame}
+
+\begin{frame}
+\frametitle{效果}
+
+\begin{columns}
+
+\begin{column}{0.4\textwidth}
+    \begin{itemize}
+        \item 模型参数：$t=1$, $U=2$, $\beta=4$，在$6 \times 6$正方晶格上
+        \item 右图为平摊到每个电子上的动能大小
+    \end{itemize}
+\end{column}
+
+\begin{column}{0.6\textwidth}
+    \includegraphics[width=\textwidth]{heat-up-T.pdf}
+\end{column}
+
+\end{columns}
 
 \end{frame}
 
