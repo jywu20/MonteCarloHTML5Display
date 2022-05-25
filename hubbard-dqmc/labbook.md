@@ -1436,3 +1436,27 @@ mag        =   0.035875775235552576 ± NaN
 # 2022.5.25
 
 编写输出辅助场构型的功能。用`check-configuration.jl`做这件事。
+
+```julia
+G_up_half_time = G_up_τ(model, Int(n_τ / 2))
+lattice = model.lattice
+n_sites = model.lattice.n_sites
+k_range = LinRange(- π / n_side, π / n_side, n_side)
+
+G_k = zeros(ComplexF64, n_side, n_side)
+for (kx_idx, kx) in enumerate(k_range)
+    for (ky_idx, ky) in enumerate(k_range)
+        k = [kx, ky]
+        for i in 1 : n_sites
+            r_i = lattice.site_list[i, :]
+            for j in 1 : n_sites
+                r_j = lattice.site_list[j, :]
+                G_k[kx_idx, ky_idx] += exp(im * k' * (r_i - r_j)) * G_up_half_time[i, j]
+            end
+        end
+    end
+end
+
+heatmap(β * G_k)
+```
+这段代码修改后需要用来做格林函数的观测。

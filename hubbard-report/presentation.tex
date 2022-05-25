@@ -61,12 +61,13 @@ Hubbard模型
     H = - t\sum_{\pair{\vb*{i}, \vb*{j}}} c^\dagger_{\vb*{i} \sigma} c_{\vb*{j} \sigma} + U \sum_{\vb*{i}} n_{\vb*{i} \uparrow} n_{\vb*{j} \downarrow}
 \end{equation}    
 \begin{itemize}
-    \item 最为著名的强关联电子模型
+    \item 最为著名的强关联电子模型%
+    \footnote{其推导和意义可见Altland或李正中等凝聚态物理教科书}%
     \begin{itemize}
         \item 半填充$\Rightarrow$金属-海森堡模型转变（Mott转变）
         \item 掺杂$\Rightarrow$t-J模型：可能的高温超导机制，类似于铜基超导的赝能隙
     \end{itemize}
-    \item 不可能解析研究（高维无Bethe ansatz可用，微扰论失效），需要蒙特卡洛模拟
+    \item 高维无Bethe ansatz解，微扰论失效，需要蒙特卡洛模拟
     \begin{itemize}
         \item 量子系统，无离散场构型 $\Rightarrow$ 解决方案：离散路径积分，引入$N$个虚时间点，做Trotter分解，$d$维量子系统=$d+1$维经典统计系统
         \begin{equation}
@@ -84,7 +85,10 @@ Hubbard模型
 \begin{frame}
 \frametitle{朴素的DQMC}
 
-\concept{离散Hubbard-Stratonovich变换}
+\concept{离散Hubbard-Stratonovich变换}%
+\footnote{
+    这里的全部理论内容均可见F.F. Assaad and H.G. Evertz. World-line and Determinantal Quantum Monte Carlo Methods for Spins, Phonons and Electrons. In Part of the Lecture Notes in Physics book series (LNP,volume 739).
+}%
 \begin{itemize}
     \item 用玻色场取代费米场
     \item 物理图像：用每个格点上的总自旋（或者别的费米算符二次型）取代费米自由度
@@ -291,18 +295,20 @@ $p(\vb{s})$通过蒙特卡洛采样，而$\expval*{O}_{\vb{s}}$遵从Wick定理
 \begin{columns}
 
 \begin{column}{0.6\textwidth}
-    格点信息单独定义，尽可能一般性；从1开始给每个格点编号
+    格点信息单独定义，让DQMC代码尽可能generic
     \begin{itemize}
+        \item 从1开始给每个格点编号
         \item \texttt{site\_list[i, :]}：给出\texttt{i}号格点的坐标
         \item \texttt{inverse\_list[x, y]}：给出$(x, y)$位置处的格点的编号
         \item \texttt{neighbor\_list[i, :]}：给出能够称为\texttt{i}号格点的近邻格点的全部格点
-        \item \texttt{neighbor\_list[ineighbor\_list\_indices[1]]}给出\texttt{i}号格点的最近邻格点，将\texttt{1}换成\texttt{2}给出次近邻格点，等等
+        \item \texttt{neighbor\_list[ineighbor\_list\_ind\\ices[1]]}给出\texttt{i}号格点的最近邻格点，将\texttt{1}换成\texttt{2}给出次近邻格点，等等
     \end{itemize}
 \end{column}
 
 \begin{column}{0.4\textwidth}
     % hubbard-dqmc\lattice.jl
     \includegraphics[width=\textwidth]{lattice-def.PNG}
+    \includegraphics[width=\textwidth]{lattice-indexation.pdf}
 \end{column}
 
 \end{columns}    
@@ -435,6 +441,13 @@ $p(\vb{s})$通过蒙特卡洛采样，而$\expval*{O}_{\vb{s}}$遵从Wick定理
         \includegraphics[width=\textwidth]{double_occ_compare.pdf}
     \end{column}
 \end{columns}  
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{效果}
+
+    增大格点数目还可以绘制费米面，但是需要的计算量较大。
 
 \end{frame}
 

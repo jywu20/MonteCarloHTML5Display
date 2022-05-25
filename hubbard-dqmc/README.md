@@ -1,3 +1,5 @@
+# 运行
+
 要做正常的物理量测量和binning，请运行`main.jl`，控制台会输出一段这样的信息：
 ```
 Welcome to a simple DQMC simulation of Hubbard model.
@@ -67,4 +69,12 @@ mag        =   0.04991535807810148 ± 0.008881317723792114
 
 要改变参数，请修改`config.jl`，其中各项内容的意义是自明的。
 
-要观看动画或检查heating up中能量是否收敛，请使用`check-configuration.jl`；动画的各帧将出现在输出目录中，使用Beamer和animate包即可得到PDF动画，或者打包成gif也可以；heat up时的能量会输出在控制台，可自行复制后绘图。
+要改变被测量的物理量，请修改`observe.jl`（并请修改`main.jl`中的`println`语句，让控制台输出可读）。
+
+要观看动画或检查heating up中能量是否收敛，请使用`check-configuration.jl`；动画的各帧将出现在输出目录（请千万主义输出目录！重复运行程序将会覆盖原有的内容）中，使用Beamer和animate包即可得到PDF动画，或者打包成gif也可以；heat up时的能量会输出在控制台，可自行复制后绘图。
+
+# 核心代码
+
+`lib.jl`以及被它include的各个文件包含了运行Hubbard模型需要的全部程序。
+
+要引入正方晶格以外的结构，请按照`lattice.jl`中的说明自行定义晶格，并且将`main.jl`中的`SquareLattice2D`替换掉。
