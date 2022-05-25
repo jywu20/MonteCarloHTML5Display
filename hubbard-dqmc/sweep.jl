@@ -66,3 +66,5 @@ function sweep!(model::HubbardDQMC, n_sweep::Int64; observe = nothing)
         end
     end
 end
+
+sweep!(observe, model::HubbardDQMC, n_sweep::Int64) = sweep!(model, n_sweep, observe = observe)

@@ -27,7 +27,7 @@
 \title{Hubbard模型的行列式蒙特卡洛模拟}
 \author{吴晋渊 18307110155}
 \institute{复旦大学物理学系}
-\date{2021}
+\date{2022}
 
 \usetheme{Madrid}
 
@@ -45,10 +45,23 @@ Hubbard模型
 \begin{equation}
     H = - t\sum_{\pair{\vb*{i}, \vb*{j}}} c^\dagger_{\vb*{i} \sigma} c_{\vb*{j} \sigma} + U \sum_{\vb*{i}} n_{\vb*{i} \uparrow} n_{\vb*{j} \downarrow}
 \end{equation}    
+\begin{center}
+    \includegraphics[width=\textwidth]{hubbard.pdf}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{二维正方晶格Hubbard模型}
+
+Hubbard模型
+\begin{equation}
+    H = - t\sum_{\pair{\vb*{i}, \vb*{j}}} c^\dagger_{\vb*{i} \sigma} c_{\vb*{j} \sigma} + U \sum_{\vb*{i}} n_{\vb*{i} \uparrow} n_{\vb*{j} \downarrow}
+\end{equation}    
 \begin{itemize}
     \item 最为著名的强关联电子模型
     \begin{itemize}
-        \item 半填充$\Rightarrow$海森堡模型
+        \item 半填充$\Rightarrow$金属-海森堡模型转变（Mott转变）
         \item 掺杂$\Rightarrow$t-J模型：可能的高温超导机制，类似于铜基超导的赝能隙
     \end{itemize}
     \item 不可能解析研究（高维无Bethe ansatz可用，微扰论失效），需要蒙特卡洛模拟
@@ -120,31 +133,6 @@ Hubbard模型
 \end{frame}
 
 \begin{frame}
-\frametitle{基于格林函数的DQMC}
-
-\begin{itemize}
-    \item 朴素DQMC性能开销大头：$\vb{B}(\tau_1, \tau_2)$矩阵连乘
-    \item 虚时间点$\tau$，空间格点$\vb*{i}$处发生一次更新，则$\vb{B}$矩阵只有如下变化：
-    \begin{equation}
-        \mathbf{B}^\sigma_{\mathbf{s}^{\prime}}(\tau)=\left(1+\vb{\Delta}^{\vb*{i}, \sigma}\right) \mathbf{B}^\sigma_{\mathbf{s}}(\tau),
-    \end{equation}
-    其中$\vb{\Delta}^{\vb*{i}, \sigma}$对角，除了$\vb*{i}$号元素为$\ee^{-2 \sigma \alpha s_{\vb*{i}, \tau}} - 1$外其余为零
-    \item 可以手动推导出
-    \begin{equation}
-        R = \prod_{\sigma = \uparrow, \downarrow} \underbrace{\det(1 + \vb{\Delta}^{\vb*{i}, \sigma} (1 - \vb{G}^\sigma_{\vb{s}}(\tau)))}_{R^\sigma},
-        \label{eq:accept-rate}
-    \end{equation}   
-    \begin{equation}
-        \vb{G}^\sigma_{\vb{s}'}(\tau) = \vb{G}^\sigma_{\vb{s}}(\tau) - \frac{1}{R^\sigma} \vb{G}^\sigma_{\vb{s}}(\tau) \vb{\Delta}^{\vb*{i}, \sigma} (1 - \vb{G}^\sigma_{\vb{s}}(\tau)).
-        \label{eq:green-function-update}
-    \end{equation}
-    \item 接受率的计算和格林函数的更新其实无需$\vb{B}$矩阵！
-    \item 可以将格林函数作为system configuration的一部分，初始化时从$\vb{s}$计算一次，之后似乎不必再计算任何$\vb{B}$矩阵连乘
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}
 \frametitle{朴素DQMC}
 
 物理量期望值为
@@ -169,6 +157,31 @@ $p(\vb{s})$通过蒙特卡洛采样，而$\expval*{O}_{\vb{s}}$遵从Wick定理
             &\quad \  - \expval*{c^\dagger_{\vb*{i} \downarrow} c_{\vb*{i} \downarrow}}_{\vb{s}} \expval*{c^\dagger_{\vb*{j} \uparrow} c_{\vb*{j} \uparrow}}_{\vb{s}} - \expval*{c^\dagger_{\vb*{j} \downarrow} c_{\vb*{j} \downarrow}}_{\vb{s}} \expval*{c^\dagger_{\vb*{i} \uparrow} c_{\vb*{i} \uparrow}}_{\vb{s}} ).
         \end{aligned}
     \end{equation}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{基于格林函数的DQMC}
+
+\begin{itemize}
+    \item 朴素DQMC性能开销大头：$\vb{B}(\tau_1, \tau_2)$矩阵连乘
+    \item 虚时间点$\tau$，空间格点$\vb*{i}$处发生一次更新，则$\vb{B}$矩阵只有如下变化：
+    \begin{equation}
+        \mathbf{B}^\sigma_{\mathbf{s}^{\prime}}(\tau)=\left(1+\vb{\Delta}^{\vb*{i}, \sigma}\right) \mathbf{B}^\sigma_{\mathbf{s}}(\tau),
+    \end{equation}
+    其中$\vb{\Delta}^{\vb*{i}, \sigma}$对角，除了$\vb*{i}$号元素为$\ee^{-2 \sigma \alpha s_{\vb*{i}, \tau}} - 1$外其余为零
+    \item 可以手动推导出
+    \begin{equation}
+        R = \prod_{\sigma = \uparrow, \downarrow} \underbrace{\det(1 + \vb{\Delta}^{\vb*{i}, \sigma} (1 - \vb{G}^\sigma_{\vb{s}}(\tau)))}_{R^\sigma},
+        \label{eq:accept-rate}
+    \end{equation}   
+    \begin{equation}
+        \vb{G}^\sigma_{\vb{s}'}(\tau) = \vb{G}^\sigma_{\vb{s}}(\tau) - \frac{1}{R^\sigma} \vb{G}^\sigma_{\vb{s}}(\tau) \vb{\Delta}^{\vb*{i}, \sigma} (1 - \vb{G}^\sigma_{\vb{s}}(\tau)).
+        \label{eq:green-function-update}
+    \end{equation}
+    \item 接受率的计算和格林函数的更新其实无需$\vb{B}$矩阵！
+    \item 可以将格林函数作为system configuration的一部分，初始化时从$\vb{s}$计算一次，之后似乎不必再计算任何$\vb{B}$矩阵连乘
 \end{itemize}
 
 \end{frame}
@@ -230,6 +243,7 @@ $p(\vb{s})$通过蒙特卡洛采样，而$\expval*{O}_{\vb{s}}$遵从Wick定理
     \begin{itemize}
         \item 被修改的变量、被调用的函数是非常透明的
         \item 便于调试
+        \item 便于展示中间结果：辅助场构型等
     \end{itemize}
     \item 代码复用
     \begin{itemize}
@@ -335,6 +349,28 @@ $p(\vb{s})$通过蒙特卡洛采样，而$\expval*{O}_{\vb{s}}$遵从Wick定理
 \vspace{1em}
 
 计算结果和许霄琰老师的示例代码一致。
+
+\end{frame}
+
+\begin{frame}
+\frametitle{效果}
+
+\begin{columns}
+
+    \begin{column}{0.5\textwidth}
+        \begin{itemize}
+            \item 参数：$t=1.0$, $\beta = 4.0$, $\Delta \tau = 0.05$，$4 \times 4$正方晶格
+            \item 运行结果（红色）和许霄琰老师的示例代码的结果（蓝色）一致
+            \item 随着$U$增大能量增大，同时涨落也增大
+            \item 随着$U$增大双占据下降
+        \end{itemize}
+    \end{column}
+
+    \begin{column}{0.4\textwidth}
+        \includegraphics[width=\textwidth]{T_compare.pdf}
+        \includegraphics[width=\textwidth]{double_occ_compare.pdf}
+    \end{column}
+\end{columns}  
 
 \end{frame}
 
