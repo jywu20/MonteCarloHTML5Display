@@ -57,8 +57,9 @@ let
         n_sites = model.lattice.n_sites
         k_e = - (tr(T_kin * G_up) + tr(T_kin * G_dn)) / n_sites
         heating_up_k_data[heating_count] = k_e
+        println(k_e)
 
-        next!(progress)
+        #next!(progress)
     end
     println("Heating up completed.")
     println()
@@ -68,13 +69,19 @@ end
 
 #regoin Show configuration 
 
-working_path = "D:/Projects/Modern Physics Experiments/HTML5/hubbard-report/configuration-u-$U/"
+working_path = "D:/Projects/Modern Physics Experiments/HTML5/hubbard-report/configuration-u-$(Int(U))/"
 
 ##
-heatmap(reshape(model.s[30, :], (n_side, n_side)), c = cgrad([:orange, :blue]), legend = :none)
-
-#sweep!(model, n_sweep) do model, G_up, G_dn
-#    p = heatmap()
-#end
+n_sweep = 100
+let 
+    sweep_count = 0
+    sweep!(model, n_sweep) do model, G_up, G_dn
+        sweep_count += 1
+        heatmap(reshape(model.s[30, :], (n_side, n_side)), 
+        c = cgrad([:orange, :blue]), legend = :none, aspect_ratio=1, 
+        xlims = (0.49, n_side + 0.5), ylims = (0.5, n_side + 0.5), dpi = 500)
+        savefig(working_path * "fixed-tau-markov-evolution-$sweep_count.png")
+    end
+end
 
 #endregion

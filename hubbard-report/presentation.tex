@@ -1,6 +1,8 @@
 \documentclass[UTF8]{ctexbeamer}
 \usepackage{physics}
 \usepackage{amsmath, amssymb, mathtools}
+\usepackage{graphicx}
+\usepackage{animate}
 \usepackage{tikz}
 \usepackage{mathdots}
 \usepackage{yhmath}
@@ -349,6 +351,34 @@ $p(\vb{s})$通过蒙特卡洛采样，而$\expval*{O}_{\vb{s}}$遵从Wick定理
 \vspace{1em}
 
 计算结果和许霄琰老师的示例代码一致。
+
+\end{frame}
+
+\begin{frame}
+\frametitle{效果}
+    
+\begin{columns}
+
+\begin{column}{0.4\textwidth}
+    \begin{itemize}
+        \item 模型参数：$t=1$, $U=2$, $\beta=4$，在$6 \times 6$正方晶格上
+        \item 固定$\tau$不动，观察马尔可夫更新
+        \item 橙色和蓝色表示向上和向下自旋
+    \end{itemize}
+\end{column}
+
+\begin{column}{0.6\textwidth}
+    \animategraphics[loop,autoplay,width=\textwidth]{12}{./configuration-u-2/fixed-tau-markov-evolution-}{1}{100}
+\end{column}
+
+\end{columns}   
+    
+\end{frame}
+
+\begin{frame}
+\frametitle{效果}
+
+    
 
 \end{frame}
 

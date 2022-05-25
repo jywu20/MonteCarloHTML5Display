@@ -15,7 +15,7 @@ U = 2.0
 n_τ = 80
 
 # The side length of the lattice
-n_side = 4 
+n_side = 6 
 
 # Controlling heating-up times, sweeping times and bin number
 heating_up_steps = Int(round(4 * β * n_side^2))
