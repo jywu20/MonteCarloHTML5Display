@@ -1,0 +1,208 @@
+\documentclass[hyperref, UTF8]{ctexart}
+
+\usepackage{geometry}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{paralist}
+\usepackage{footnote}
+\usepackage{marginnote}
+\usepackage{enumerate}
+\usepackage{autobreak}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{bbm}
+\usepackage{cite}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{physics}
+\usepackage{siunitx}
+\usepackage{tikz}
+\usepackage[compat=1.1.0]{tikz-feynhand}
+\usepackage[ruled, vlined, linesnumbered, noend]{algorithm2e}
+\usepackage[colorlinks]{hyperref} % linkcolor=black, anchorcolor=black, citecolor=black, filecolor=black
+\usepackage[most]{tcolorbox}
+\usepackage{caption}
+\usepackage{prettyref}
+
+\geometry{left=3.18cm,right=3.18cm,top=2.54cm,bottom=2.54cm}
+\titlespacing{\paragraph}{0pt}{1pt}{10pt}[20pt]
+\setlength{\droptitle}{-5em}
+
+\DeclareMathOperator{\timeorder}{\mathcal{T}}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\legpoly}{P}
+\DeclareMathOperator{\primevalue}{P}
+\DeclareMathOperator{\sgn}{sgn}
+\newcommand*{\ii}{\mathrm{i}}
+\newcommand*{\ee}{\mathrm{e}}
+\newcommand*{\const}{\mathrm{const}}
+\newcommand*{\suchthat}{\quad \text{s.t.} \quad}
+\newcommand*{\argmin}{\arg\min}
+\newcommand*{\argmax}{\arg\max}
+\newcommand*{\normalorder}[1]{: #1 :}
+\newcommand*{\pair}[1]{\langle #1 \rangle}
+\newcommand*{\fd}[1]{\mathcal{D} #1}
+
+\newrefformat{sec}{第\ref{#1}节}
+\newrefformat{note}{注\ref{#1}}
+\newrefformat{fig}{图\ref{#1}}
+\newrefformat{alg}{算法\ref{#1}}
+\newrefformat{back}{背景知识\ref{#1}}
+\newrefformat{info}{资料框\ref{#1}}
+\newrefformat{warn}{注意事项\ref{#1}}
+
+\usetikzlibrary{arrows,shapes,positioning}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{decorations.markings}
+\tikzstyle arrowstyle=[scale=1]
+\tikzstyle directed=[postaction={decorate,decoration={markings,
+    mark=at position .5 with {\arrow[arrowstyle]{stealth}}}}]
+\tikzstyle ray=[directed, thick]
+\tikzstyle dot=[anchor=base,fill,circle,inner sep=1pt]
+
+% Algorithm setting
+\renewcommand{\algorithmcfname}{算法}
+% Python-style code
+\SetKwIF{If}{ElseIf}{Else}{if}{:}{elif:}{else:}{}
+\SetKwFor{For}{for}{:}{}
+\SetKwFor{While}{while}{:}{}
+\SetKwInput{KwData}{输入}
+\SetKwInput{KwResult}{输出}
+\SetArgSty{textnormal}
+
+\tcbuselibrary{skins, breakable, theorems}
+
+%\renewcommand{\emph}[1]{\textbf{#1}}
+\newcommand*{\concept}[1]{{\textbf{#1}}}
+
+
+\newcommand{\Ztwo}{$\mathbb{Z}_2$}
+
+% Cite: superscript, [1]
+%\makeatletter
+%\renewcommand\@citess[1]{\textsuperscript{[#1]}}
+%\makeatother
+
+\title{自旋和费米子体系的蒙特卡洛模拟}
+\author{吴晋渊 18307110155}
+
+\begin{document}
+
+\maketitle
+
+\section{蒙特卡洛模拟概述}
+
+\subsection{马尔可夫链蒙特卡洛}
+
+凝聚态物理中，经常需要计算哈密顿量为$H$的平衡态统计系统在温度$T$下的各种物理量的期望值
+\begin{equation}
+    \expval{O} = \frac{1}{Z} \sum_{\text{configuration $\mathcal{C}$}} \ee^{- \beta H[\mathcal{C}]} O[\mathcal{C}], \quad Z = \sum_{\mathcal{C}} \ee^{- \beta H[\mathcal{C}]},
+    \label{eq:sampling}
+\end{equation}
+其中逆温$\beta = 1 / T$。%
+\footnote{
+    由于在研究有效模型，我们可以使用自然单位制以节约篇幅。
+}%
+这个期望值计算一般来说是难以完成的，因为设体系有$N$个格点，每个格点的状态有$n$种取值范围，则一共有$n^N$种可能的系统构型。
+对量子系统，情况更加棘手，此时$\mathcal{C}$应当理解为体系的一个能量本征态，而$H$的能量本征态——或者也可以说是零温性质——一般而言是无法求出的。
+
+蒙特卡洛模拟是一种数值解决以上问题的方法。计算物理中通常所说的蒙特卡洛方法一般都是马尔可夫链蒙特卡洛方法，即构造马尔可夫链
+\begin{equation}
+    \cdots \rightarrow \mathcal{C}_{n-1} \rightarrow \mathcal{C}_n \rightarrow \mathcal{C}_{n+1} \rightarrow \cdots,
+\end{equation}
+保证这个马尔可夫链各态历经（即从一个状态出发，必有概率非零的一条链能够到达任何一个其它状态），且满足如下细致平衡条件：
+\begin{equation}
+    p(\mathcal{C} \to \mathcal{D}) p(\mathcal{C}) = p(\mathcal{D} \to \mathcal{C}) p(\mathcal{D}), \quad p(\mathcal{C}) \coloneqq \frac{1}{Z} \ee^{- \beta H[\mathcal{C}]}
+\end{equation}
+或者更加宽松的全局平衡条件（细致平衡的马尔可夫链一定也是全局平衡的，但反之不然）
+\begin{equation}
+    p(\mathcal{C}) = \sum_\mathcal{D} p(\mathcal{D}) p(\mathcal{D} \to \mathcal{C}).
+\end{equation}
+此时，随机过程的理论保证了该马尔可夫链收敛时，状态$\mathcal{C}$出现的概率一定是$p(\mathcal{C})$。
+这样，将一个已经收敛的马尔可夫链运行一段时间，并各个时间点处$O$的值，计算算术平均，就得到了$\expval{O}$的近似值，运行时间越长，近似效果也越好。
+
+\subsection{Binning技术}
+
+从$\mathcal{C}_{n-1}$到$\mathcal{C}_n$的过程称为\concept{更新}。由于常规的算法的更新都是相对局域的，$\mathcal{C}_{n-1}, \mathcal{C}_n, \mathcal{C}_{n+1}$这些靠得较近的状态会较为相似。将$\{\mathcal{C}_n\}$序列——从而$\{O_n\}$序列——看成一个信号，我们说这个信号存在\concept{自关联（autocorrelation）}。
+在计算$\expval{O}$近似值时，如果更新步数在马尔可夫链的自关联长度以内，$\expval{O}$的近似值将出现严重的系统性偏差，对其方差的估算也是非常不准确的，可能严重偏低（例如$O$是系统能量，相似的构型能量相似）或偏高（如$\mathcal{O}$是\emph{反铁磁}序参量，翻转自旋即改变符号）。
+
+最为安全的做法是，在$\{\mathcal{C}_n\}$序列中每隔自关联长度采样一次，而丢弃其它所有的$\mathcal{C}_n$。
+这样能够保证物理量的平均值和方差足够精确，但浪费较大。一种折中的做法是，将$\{\mathcal{C}_n\}$划分成一系列等长的区间（称为\concept{bin}），每个bin的长度长于自关联长度，计算这个bin内的$O$的平均值，将其作为这个bin内的$O$的代表，然后计算各个bin中的$O$的平均值的平均值和方差。
+这个过程称为\concept{binning}。实际上，可以不实际测自关联长度而拿一段较长的$\{\mathcal{C}_n\}$序列直接做binning，如果发现调整bin长度得到的方差基本不变，那么说明无论是单个bin的长度还是整个$\{\mathcal{C}_n\}$序列的长度都已经足够了。
+文献\cite{landau2021guide}对binning技术有详细的讨论。
+
+\subsection{Metropolis更新}
+
+所谓\concept{Metropolis更新}是指一次翻转一个格点上的自由度的更新方法。常见的Metropolis更新可以分成两种，一种是先随机选取一个格点$\vb*{i}$，尝试将其上的自由度$s_{\vb*{i}}$从一个值$s_{\vb*{i}}$切换到$s_{\vb*{i}}'$，真的做这一更新的概率是
+\begin{equation}
+    \begin{aligned}
+        p(\mathcal{C} \to \mathcal{C}' | \text{$\vb*{i}$ is chosen}) &= \begin{cases}
+            1, &\quad H[\mathcal{C}] \geq H[\mathcal{C}'], \\
+            {p(\mathcal{C}')} / {p(\mathcal{C})}, &\quad H[\mathcal{C}] < H[\mathcal{C}'],
+        \end{cases} \\
+        &= p(u \leq p(\mathcal{C}') / p(\mathcal{C}) ),
+    \end{aligned}
+    \label{eq:metropolis-update}
+\end{equation}
+其中$u$是均匀分布在0和1之间的一个随机变量。在这种更新策略下，设构型$\mathcal{C}$和$\mathcal{C}'$仅仅在格点$\vb*{i}$上有差别，那么有
+\begin{equation}
+    \begin{aligned}
+        \frac{p(\mathcal{C} \to \mathcal{C}')}{p(\mathcal{C}' \to \mathcal{C})} &= \frac{p(\text{$\vb*{i}$ is chosen}) p(\mathcal{C} \to \mathcal{C}' | \text{$\vb*{i}$ is chosen})}{p(\text{$\vb*{i}$ is chosen}) p(\mathcal{C}' \to \mathcal{C} | \text{$\vb*{i}$ is chosen})} \\
+        &= \begin{cases}
+            \frac{1}{p(\mathcal{C}) / p(\mathcal{C}')} , &\quad H[\mathcal{C}] \geq H[\mathcal{C}'], \\
+            \frac{p(\mathcal{C}') / p(\mathcal{C})}{1}, &\quad H[\mathcal{C}] < H[\mathcal{C}'], 
+        \end{cases} \\
+        &= \frac{p(\mathcal{C}')}{p(\mathcal{C})},
+    \end{aligned}
+\end{equation}
+于是细致平衡条件成立。各态历经条件的成立是显然的。因此，这个更新策略是正确的。
+
+另一种更加常见的Metropolis更新是依照顺序选择格点$\vb*{i}$，然后根据\eqref{eq:metropolis-update}做更新。此时，一步更新应该理解成遍历一趟全部格点，对单个格点的更新由于依赖于格点位置，不能看成马尔可夫链的一个步骤。
+此时我们有
+\begin{equation}
+    p(\mathcal{C} \to \mathcal{C}') = p(\mathcal{C} \to \mathcal{C}|_{s_{1} \to s_{1}'}) p(\mathcal{C}|_{s_{1} \to s_{1}'} \to \mathcal{C}|_{s_{1, 2} \to s_{1, 2}'}) \cdots p(\mathcal{C}|_{s_{1, 2, \ldots, N-1} \to s_{1, 2, \ldots, N-1}'} \to \mathcal{C}'),
+\end{equation}
+以及
+\begin{equation}
+    p(\mathcal{C}' \to \mathcal{C}) = p(\mathcal{C}' \to \mathcal{C}|_{s_{2, 3, \ldots, N} \to s'_{2, 3, \ldots, N}}) p(\mathcal{C}|_{s_{2, 3, \ldots, N} \to s'_{2, 3, \ldots, N}} \to \mathcal{C}|_{s_{3, \ldots, N} \to s'_{3, \ldots, N}}) \cdots p(\mathcal{C}|_{s_N \to s_{N}'} \to \mathcal{C}),
+\end{equation}
+显然，两者之比并无分子分母的共同因子可以约分。事实上，这种更新方式是可能会违反细致平衡条件的（例如，一维伊辛模型在固定次序做Metropolis更新时就违反细致平衡原理\cite{manousiouthakis1999strict}），虽然它仍然保证全局平衡条件。
+这种更新方法甚至可能出现不各态历经的情况，不过不各态历经的情况仅限于（有关的讨论见\cite{brugge2021convergence}）。
+
+Metropolis更新以外尚有其它更新方式，如在系统接近二级相变点时，由于系统关联长度很大，Metropolis更新非常缓慢，此时应当使用集团更新方法。
+有关的讨论可见\cite{binder1993monte}。
+
+\subsection{量子蒙特卡洛}
+
+对量子系统，虽然原则上可以先将$H$做严格对角化，然后将系统的能量本征态视作系统构型并做蒙特卡洛取样，但这两个步骤都极其困难。
+大的多体系统的严格对角化基本上是不现实的，能量本征态具有复杂的内部结构，亦没有简明的方法能够做局部的修改而从一个能量本征态切换到另一个能量本征态。
+一种做量子蒙特卡洛的方法是\concept{离散路径积分蒙特卡洛}。
+记系统中的全体自由度为$s$，我们对算符$\ee^{- \beta H}$做Trotter分解，即近似认为
+\[
+    Z = \trace \ee^{- \Delta \tau H} \ee^{- \Delta \tau H} \cdots \ee^{- \Delta \tau H},
+\] 
+并在两个$\ee^{- \Delta \tau H}$之间插入正交完备关系，则有
+\begin{equation}
+    Z = \sum_{s_0, s_1, \cdots, s_{N_\tau - 1}} \mel{s_0}{\ee^{- \Delta \tau H}}{s_1} \mel{s_1}{\ee^{- \Delta \tau H}}{s_2} \cdots \mel{s_{N_\tau - 1}}{\ee^{- \Delta \tau H}}{s_0}, \quad N_\tau \coloneqq \beta / \Delta \tau.
+    \label{eq:discrete-path-integral}
+\end{equation}
+这个配分函数的形式和一个$d+1$维格子上的\emph{经典}统计系统的配分函数的形式一致，其中，温度变化带来的影响体现在这个$d+1$维经典统计系统多出来的维度的有限尺度效应上。
+显然，\eqref{eq:discrete-path-integral}是一个离散路径积分，统计物理中通常将这个多出来的维度称为\concept{虚时间}，从而\eqref{eq:discrete-path-integral}称为平衡态下的虚时间路径积分，和零温下的实时间路径积分相对应。
+直观地看，多出的这个维度体现了体系不仅具有热涨落（蒙特卡洛更新时场构型的变化），也具有量子涨落（不同虚时间点场构型有不同的值），量子涨落驱动体系“自己”的时间演化，而热涨落表示系统和外界（热库）相互作用导致的涨落。
+
+离散路径积分蒙特卡洛有更为优化的版本：世界线蒙特卡洛。如果能够从离散路径积分的场构型中识别出某种“粒子”，即可将场构型的虚时间演化化归为粒子的世界线，通过局部调整世界线的形状、增减粒子即可做蒙特卡洛模拟。
+除了离散路径积分蒙特卡洛以外，还有随机级数展开、连续时间路径积分蒙特卡洛等方法。
+关于这些方法的介绍可参考\cite{assaad2008world}；本文主要讨论费米子系统的行列式蒙特卡洛（determinant quantum Monte Carlo, DQMC）方法。
+
+\section{经典伊辛模型的Metropolis蒙特卡洛模拟}
+
+\subsection{Metropolis更新}
+
+
+
+\section{Hubbard模型的行列式蒙特卡洛模拟}
+
+\bibliographystyle{plain}
+\bibliography{monte-carlo}
+
+\end{document}
