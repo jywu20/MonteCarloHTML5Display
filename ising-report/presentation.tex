@@ -82,7 +82,7 @@ Metropolis方法\footnote{Janke, W. 1996. Monte Carlo simulations of spin system
 \begin{frame}
 \frametitle{Metropolis方法更新自旋构型}
 
-显含格点$\vb*{i}$的那部分能量：$H = - J \sum_{\langle \vb*{i}, \vb*{j} \rangle} \sigma_{\vb*{j}} - h \sigma_{\vb*{i}} $
+显含格点$\vb*{i}$的那部分能量：$H = - J \sum_{\langle \vb*{i}, \vb*{j} \rangle} \sigma_{\vb*{i}} \sigma_{\vb*{j}} - h \sigma_{\vb*{i}}$
 
 \begin{center}
     \input{flip-one-site.tex} 
@@ -90,7 +90,7 @@ Metropolis方法\footnote{Janke, W. 1996. Monte Carlo simulations of spin system
 
 于是翻转格点$\vb*{i}$的accept rate就是
 \begin{equation}
-    \text{accept rate} = \frac{P_\text{after}}{P_\text{before}} = \ee^{- 2 J \sum_{\langle \vb*{i}, \vb*{j} \rangle} \sigma_{\vb*{j}} - 2 h \sigma_{\vb*{i}} }.
+    \text{accept rate} = \frac{P_\text{after}}{P_\text{before}} = \ee^{- 2 J \sum_{\langle \vb*{i}, \vb*{j} \rangle} \sigma_{\vb*{i}} \sigma_{\vb*{j}} - 2 h \sigma_{\vb*{i}} }.
 \end{equation}
 
 \end{frame}
@@ -267,7 +267,7 @@ $L=100$，观察不同温度下的构型：
 \begin{frame}
 \frametitle{Finite size scaling and data collapsing}
 
-暂无交互式功能（见\texttt{ising-data-collapsing/ising-monte-carlo.jl}）
+暂无交互式功能（见\texttt{ising-data-collapsing/finite-size-scaling-data-generating.jl}）
 
 \begin{columns}
 

@@ -1,4 +1,4 @@
-\documentclass[hyperref, UTF8]{ctexart}
+\documentclass[UTF8]{ctexart}
 
 \usepackage{geometry}
 \usepackage{titling}
@@ -13,7 +13,7 @@
 \usepackage{bbm}
 \usepackage{cite}
 \usepackage{graphicx}
-\usepackage{subfigure}
+\usepackage{subcaption}
 \usepackage{physics}
 \usepackage{siunitx}
 \usepackage{tikz}
@@ -133,13 +133,14 @@
 
 \subsection{Metropolis更新}
 
-所谓\concept{Metropolis更新}是指一次翻转一个格点上的自由度的更新方法。常见的Metropolis更新可以分成两种，一种是先随机选取一个格点$\vb*{i}$，尝试将其上的自由度$s_{\vb*{i}}$从一个值$s_{\vb*{i}}$切换到$s_{\vb*{i}}'$，真的做这一更新的概率是
+所谓\concept{Metropolis更新}是指一次翻转一个格点上的自由度的更新方法。常见的Metropolis更新可以分成两种，一种是先随机选取一个格点$\vb*{i}$，尝试将其上的自由度$s_{\vb*{i}}$从一个值$s_{\vb*{i}}$切换到$s_{\vb*{i}}'$，真的做这一更新的概率（称为\concept{接受率}）是
 \begin{equation}
     \begin{aligned}
         p(\mathcal{C} \to \mathcal{C}' | \text{$\vb*{i}$ is chosen}) &= \begin{cases}
             1, &\quad H[\mathcal{C}] \geq H[\mathcal{C}'], \\
             {p(\mathcal{C}')} / {p(\mathcal{C})}, &\quad H[\mathcal{C}] < H[\mathcal{C}'],
         \end{cases} \\
+        &= \min (1, p(\mathcal{C}') / p(\mathcal{C})) \\
         &= p(u \leq p(\mathcal{C}') / p(\mathcal{C}) ),
     \end{aligned}
     \label{eq:metropolis-update}
@@ -166,8 +167,12 @@
 \begin{equation}
     p(\mathcal{C}' \to \mathcal{C}) = p(\mathcal{C}' \to \mathcal{C}|_{s_{2, 3, \ldots, N} \to s'_{2, 3, \ldots, N}}) p(\mathcal{C}|_{s_{2, 3, \ldots, N} \to s'_{2, 3, \ldots, N}} \to \mathcal{C}|_{s_{3, \ldots, N} \to s'_{3, \ldots, N}}) \cdots p(\mathcal{C}|_{s_N \to s_{N}'} \to \mathcal{C}),
 \end{equation}
-显然，两者之比并无分子分母的共同因子可以约分。事实上，这种更新方式是可能会违反细致平衡条件的（例如，一维伊辛模型在固定次序做Metropolis更新时就违反细致平衡原理\cite{manousiouthakis1999strict}），虽然它仍然保证全局平衡条件。
-这种更新方法甚至可能出现不各态历经的情况，不过不各态历经的情况仅限于（有关的讨论见\cite{brugge2021convergence}）。
+显然，两者之比并无分子分母的共同因子可以约分。事实上，这种更新方式是可能会违反细致平衡条件的（例如，一维伊辛模型在固定次序做Metropolis更新时就违反细致平衡条件\cite{manousiouthakis1999strict}），虽然它仍然保证全局平衡条件。
+这种更新方法甚至可能出现不各态历经的情况，不过不各态历经的情况仅限于翻转某个自由度时概率不发生变化时，如果这种情况真的出现了，那么可以以\SI{50}{\percent}对\SI{50}{\percent}的概率决定是否翻转，这样的话，各态历经条件仍然是成立的。
+有关的讨论见\cite{brugge2021convergence}。%
+\footnote{
+    此文献关于平衡条件的说法有误，它似乎认为加入\SI{50}{\percent}对\SI{50}{\percent}的概率后，得到的马尔可夫链满足细致平衡条件，但正如前面所说，这是不对的，我们只能够保证全局平衡条件。
+}%
 
 Metropolis更新以外尚有其它更新方式，如在系统接近二级相变点时，由于系统关联长度很大，Metropolis更新非常缓慢，此时应当使用集团更新方法。
 有关的讨论可见\cite{binder1993monte}。
@@ -192,15 +197,297 @@ Metropolis更新以外尚有其它更新方式，如在系统接近二级相变�
 
 离散路径积分蒙特卡洛有更为优化的版本：世界线蒙特卡洛。如果能够从离散路径积分的场构型中识别出某种“粒子”，即可将场构型的虚时间演化化归为粒子的世界线，通过局部调整世界线的形状、增减粒子即可做蒙特卡洛模拟。
 除了离散路径积分蒙特卡洛以外，还有随机级数展开、连续时间路径积分蒙特卡洛等方法。
-关于这些方法的介绍可参考\cite{assaad2008world}；本文主要讨论费米子系统的行列式蒙特卡洛（determinant quantum Monte Carlo, DQMC）方法。
+关于这些方法的介绍可参考\cite{assaad2008world}；本实验主要讨论费米子系统的行列式蒙特卡洛（determinant quantum Monte Carlo, DQMC）方法。
 
 \section{经典伊辛模型的Metropolis蒙特卡洛模拟}
 
 \subsection{Metropolis更新}
 
+经典伊辛模型
+\begin{equation}
+    Z = \sum_{\{\sigma_{\vb*{i}}\}} \ee^{- \beta H[\{\sigma_{\vb*{i}}\}]}, \quad H[\{\sigma_{\vb*{i}}\}] = - J \sum_{\pair{\vb*{i}, \vb*{j}}} \sigma_{\vb*{i}} \sigma_{\vb*{j}} - h \sum_{\vb*{i}} \sigma_{\vb*{i}}, \quad \sigma_{\vb*{i}} = \pm 1
+\end{equation}
+是重要的统计模型，它在凝聚态物理中的意义主要是演示铁磁性的起源，但它已经在广阔得多的领域内得到了应用。
+此处我们使用Metropolis更新来对经典伊辛模型做蒙特卡洛模拟。
+由于最终出现在配分函数中的参数仅有$\beta J$和$\beta h$，在以下推导中，我们可以将$\beta$吸收进$J$和$h$中，从而实际模拟时保持$J, h$不变，调节$T$等效为按照因子$\beta$成比例缩放$J$和$h$，将保持$J, T$不变，调节$h$等效为保持$J$不变，按照$\beta \Delta h$的大小变动$h$。
 
+\begin{figure}
+    \centering
+    \input{../ising-report/flip-one-site.tex}
+    \caption{翻转一个格点上的自旋}
+    \label{fig:ising-flip}
+\end{figure}
+
+如\prettyref{fig:ising-flip}所示，翻转$\sigma_{\vb*{i}}$，只会影响能量中形如$-J \sum_{\pair{\vb*{i}, \vb*{j}}} \sigma_{\vb*{i}} \sigma_{\vb*{j}}$的那几项，于是根据\eqref{eq:metropolis-update}计算接受率，为
+\begin{equation}
+    \begin{aligned}
+        p(\text{flip $\sigma_{\vb*{i}}$}) &= \min(1, \frac{C \ee^{- J \sum_{\pair{\vb*{i}, \vb*{j}}} \sigma_{\vb*{i}} \sigma_{\vb*{j}} - h \sigma_{\vb*{i}} }}{C \ee^{ J \sum_{\pair{\vb*{i}, \vb*{j}}} \sigma_{\vb*{i}} \sigma_{\vb*{j}} + h \sigma_{\vb*{i}} }}) \\
+        &= \min(1, \ee^{- 2 J \sum_{\pair{\vb*{i}, \vb*{j}}} \sigma_{\vb*{i}} \sigma_{\vb*{j}} - 2 h \sigma_{\vb*{i}} }).
+    \end{aligned}
+\end{equation}
+这就是说，在计算接受率时我们无需完整计算翻转前后的系统能量，由于系统是高度局域的，接受率通过$\vb*{i}$附近的若干个格点的信息就能够确定。
+
+\subsection{自旋构型变化演示}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{../ising-report/ising-phase-plot-configuration.PNG}
+    \caption{\href{../ising-phase-plot-configuration/index.html}{\texttt{ising-phase-plot-configuration/index.html}}的界面}
+    \label{fig:configuration-show}
+\end{figure}
+
+运行\href{../ising-phase-plot-configuration/index.html}{\texttt{ising-phase-plot-configuration/index.html}}可以在不同参数下观看二维正方晶格上的伊辛模型的构型的变化情况，其中红色和蓝色分别代表向下和向上的自旋，界面如\prettyref{fig:configuration-show}所示。
+
+\prettyref{fig:examples-ising-configuration}展示了一些不同参数下的自旋构型。可以看到，在$T$明显小于临界温度理论值
+\begin{equation}
+    T_\text{c} = 2.2691853142
+\end{equation}
+时（\prettyref{fig:ferro-ising-configuration}），施加一个小的磁场，体系立刻进入同方向的均匀的铁磁态，只有少许热涨落；
+在$T$明显大于临界温度时（\prettyref{fig:para-ising-configuration}），体系中向上和向下的自旋出现无规律得到杂乱分布，没有长程序；
+$T$接近临节温度时（\prettyref{fig:cluster-ising-configuration}），体系中出现一系列尺度有大有小，各不相同的团簇，大团簇内部有小团簇，将大团簇放大，其内部结构和放大前看起来很相似，说明体系出现了演生的自相似性，这是临界点的典型特征。
+
+\begin{figure}
+    \centering
+    \begin{subfigure}{0.4\textwidth}
+        \includegraphics[width=\textwidth]{{../ising-report/T=1.5-L=100-h=0}.png}
+        \subcaption{}
+        \label{fig:ferro-ising-configuration}
+    \end{subfigure}
+    \begin{subfigure}{0.4\textwidth}
+        \includegraphics[width=\textwidth]{{../ising-report/T=3.5-L=100-h=0}.png}
+        \subcaption{}
+        \label{fig:para-ising-configuration}
+    \end{subfigure}
+    \begin{subfigure}{0.4\textwidth}
+        \includegraphics[width=\textwidth]{{../ising-report/T=2.26-L=100-h=0}.png}
+        \subcaption{}
+        \label{fig:cluster-ising-configuration}
+    \end{subfigure}
+    \caption{不同参数下的自旋构型，系统边长为$L=100$ (a) $T=1.5, h=-0.1$ (b) $T=3.5, h = 0$ (c) $T = 2.26, h = 0$}
+    \label{fig:examples-ising-configuration}
+\end{figure}
+
+\subsection{相图扫描演示}
+
+运行\href{../ising-phase-diagram-both-side/index.html}{\texttt{ising-phase-diagram-both-side/index.html}}，可以扫描不同边长的体系的相图，界面如\prettyref{fig:phase-diagram-gui}所示。
+其中，横轴为$T$，纵轴为$h$，图中每一点都给出了这个参数下的磁化率，青色的点代表自旋全部向下，洋红色的点代表自旋全部向上，两者之间的情况使用蓝色表示。
+点击“开始扫描相图”，会看到不同参数处的磁化强度出现在图上。
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{../ising-report/ising-phase-diagram-both-side.PNG}
+    \caption{\href{../ising-phase-diagram-both-side/index.html}{\texttt{ising-phase-diagram-both-side/index.html}}的界面}
+    \label{fig:phase-diagram-gui}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\textwidth]{../ising-report/phase-diagram-L-100.png}
+    \caption{$L=100$时数值计算出的相图}
+    \label{fig:phase-diagram-example}
+\end{figure}
+
+\prettyref{fig:phase-diagram-example}给出了选择$L=100$后计算完成时\href{../ising-phase-diagram-both-side/index.html}{\texttt{ising-phase-diagram-both-side/index.html}}给出的相图，其中的虚线是。可以看到，在$T < T_\text{c}$时，改变$h$会经历从向下的铁磁态到向上的铁磁态的一级相变，但是$T > T_\text{c}$时不存在这个现象。
+这暗示我们，沿着$h=0$曲线改动$T$，会经历一个二级相变。
+这个相图的结构和水的液相和气相的相图非常类似：两个相被一个一级相变区分，沿着两相交界线经过一个二级相变后，两相融合。%
+\footnote{
+    固液相变同样有序参量的变化，即晶格结构的出现和不出现，但是这种序参量变化在相变点是不连续的，固液相变因此是一个一级相变，和此处讨论的二级相变不是一回事。
+}%
+
+\subsection{相变点处的finite size scaling}
+
+相图上看不清楚二级相变的细节，本节我们根据文献\cite{sandvik2010computational}中提到的方法，对伊辛模型的相变点做所谓的finite size scaling。
+一个边长为$L$的系统中的可观测量$Q$可以写成$L$和$T$的函数，或者等价的，$L$和归一化温度
+\begin{equation}
+    t = \frac{T - T_\text{c}}{T_\text{c}}
+\end{equation}
+的函数。温度为$T$的无限大系统中的关联长度$\xi$在临界点附近和$t$存在临界指数关系
+\begin{equation}
+    \xi \sim \abs{t}^{- \nu},
+\end{equation}
+从而$Q$也可以写成$L$和$\xi$的函数。临界系统通常可以使用较为简单的统计场论描述，其中的场是做过平滑化的序参量$\phi$，而$Q$作为一个意义清晰的物理可观测量，通常形如
+\begin{equation}
+    Q \sim \int \dd[d]{\vb*{r}} \phi^m (\grad{\phi})^n,
+\end{equation}
+显然，在临界点上系统具有自相似性，于是$Q$应当具有标度不变性，即如果我们将$L$和$\xi$同时扩大$\lambda$倍，那么$Q$应当是原来的$\lambda^\sigma$倍，其中$\sigma$是某种“反常量纲”，大体上和普通的量纲分析给出的量纲一致但可能因为相互作用修正有一些变动，于是应当能够将$Q$写成以下形式：
+\begin{equation}
+    Q = L^\sigma f(\xi / L) = L^\sigma f(\abs{t}^{- \nu} / L),
+\end{equation}
+我们定义一个新函数$g(x) = f(x^{-\nu})$，使得
+\begin{equation}
+    Q = L^\sigma g(t L^{1 / \nu}).
+\end{equation}
+$L \to \infty$时$Q$的行为和无穷大系统一致，同样有临界指数关系
+\begin{equation}
+    Q \sim \abs{t}^{- \kappa},
+\end{equation}
+于是在$L$较大时只能有
+\[
+    g(t L^{1 / \nu}) \sim (t L^{1 / \nu})^{- \kappa},
+\]
+只有这样才能够让$\abs{t}$的指数是正确的。此时
+\[
+    Q \sim \abs{t}^{- \kappa} L^{\sigma - \kappa / \nu},
+\]
+由于$Q$不存在$L$依赖了，应有
+\[
+    \sigma = \frac{\kappa}{\nu}.
+\]
+于是最后我们得到
+\begin{equation}
+    Q = L^{\kappa / \nu} g(t L^{1 / \nu}),
+\end{equation}
+也就是说，将不同的$L$，不同的$T$处的$Q L^{- \kappa / \nu}$和$t L^{1 / \nu}$画在一个坐标系内，我们会发现所有数据点都落在一条曲线上。
+这个关系式（以及一系列类似的分析）给出了\emph{有限大小}体系中的标度律，因此称为finite size scaling。
+
+理论上可以证明，二维正方晶格伊辛模型中，磁化率$\chi$和$t$具有如下临界指数关系：
+\begin{equation}
+    \chi \sim \abs{t}^{- \gamma}, \quad \gamma = 7 /4,
+\end{equation}
+且二维正方晶格伊辛模型中关联长度的临界指数$\nu$为1，于是取$Q$为$\chi$，$\kappa$为$\gamma$，即可验证磁化率的finite size scaling。
+通过简单的统计力学计算可以发现
+\begin{equation}
+    \chi = \beta L^2 (\expval{m^2} - \expval{m}^2),
+\end{equation}
+其中$m$为磁化强度，于是可以据此完成$\chi$的“原位”蒙特卡洛测定，而无需真的在不同磁场下做蒙特卡洛计算得到磁化强度再依定义得到磁化率。
+
+由于finite size scaling缺乏物理直观，又需要大量计算，本实验采用Julia编程来实现它。运行
+\href{../ising-data-collapsing/ising-data-collapsing/finite-size-scaling-data-generating.jl}{\texttt{ising-data-collapsing/finite-size-scaling-data-generating.jl}}，会在程序代码中设定的位置处得到一个包括$L$, $T$, $m$, $\chi$的CSV文件。
+据此以及$\nu$,$\gamma$和$T_\text{c}$的理论值绘图，可得到类似\prettyref{fig:finite-size-scaling}的结果。
+可以看到，在曲线最大值附近——实际上就是临界点附近，因为$L$固定，变动$T$时，无限大系统中$\chi$会发散，有限大系统中$\chi$会取最大值——数据较为散乱，这是可以理解的，因为Metropolis算法在临界点附近表现不佳。
+要获得更好的相变点附近的数据，需要使用集团更新算法。
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{../ising-report/../ising-data-collapsing/ising-data-collapsing-run-1.pdf}
+    \caption{Finite size scaling所得结果示例}
+    \label{fig:finite-size-scaling}
+\end{figure}
 
 \section{Hubbard模型的行列式蒙特卡洛模拟}
+
+本节讨论Hubbard模型的DQMC模拟。Hubbard模型
+\begin{equation}
+    H = - t\sum_{\pair{\vb*{i}, \vb*{j}}} c^\dagger_{\vb*{i} \sigma} c_{\vb*{j} \sigma} + U \sum_{\vb*{i}} n_{\vb*{i} \uparrow} n_{\vb*{j} \downarrow} - \mu N
+    \label{eq:hubbard}
+\end{equation} 
+考虑了一个单带、仅有最近邻跃迁的紧束缚模型中的电子的在位（on-site）库伦排斥，是重要的强关联电子模型。
+所谓强关联效应是指由于电子间的库伦相互作用，凝聚态系统的行为和基于能带理论的金属/绝缘体行为非常不一致。
+就Hubbard模型而言，在$U=0$时，\eqref{eq:hubbard}的能带处于半填充状态，是一个典型的导体。
+略微增大$U$会扭曲能带，为了保证电子永远是半填充的，我们在$\mu$和$U$之间施加如下约束
+\begin{equation}
+    \mu = - \frac{U}{2},
+\end{equation}
+从而等效的有（忽略一个常数）
+\begin{equation}
+    H = - t\sum_{\pair{\vb*{i}, \vb*{j}}} c^\dagger_{\vb*{i} \sigma} c_{\vb*{j} \sigma} + U \sum_{\vb*{i}} \left( n_{\vb*{i} \uparrow} - \frac{1}{2} \right) \left( n_{\vb*{i} \downarrow} - \frac{1}{2} \right).
+    \label{eq:half-filling-hubbard}
+\end{equation}
+这个模型具有粒子-空穴对称性，从而其中的电子永远是半填充的。
+在这个模型中，如果$U$非常大，由于系统半填充，每个格点平摊到一个电子，如果一个格点上有一上一下两个电子，那么能量就太大了，因此所有电子都被固定在各自的格点上而无法发生跃迁，即不能出现电荷的移动，不过每个格点上的自旋可以翻转。
+可以证明，将紧束缚哈密顿量当作微扰后，此时的体系实际上由一个反铁磁海森堡模型描述。
+因此，随着$U$的增大，会出现从费米液体到反铁磁绝缘体的转变，这是Mott转变的一个例子，是非常典型的强关联行为\cite{fradkin2013field}。
+
+DQMC是一种常见的处理与Hubbard模型类似的强关联电子模型的蒙特卡洛方法，其基本思想是首先通过离散Hubbard-Stratonovich变换引入一个辅助场，即将有相互作用的费米子理论重写成辅助场背景下的自由费米子理论，然后积掉（integrate out）费米子自由度，得到一个关于辅助场的理论（这个理论中会大量出现行列式，因此这种方法称为“行列式”蒙特卡洛），对这个理论做蒙特卡洛模拟。
+由于DQMC涉及大量理论推导，下文中我们将不展示各个公式是如何得到的，而是大致地回顾其思想。有关的细节可见\cite{assaad2008world}等文献。
+
+\subsection{DQMC的基本原理和更新方式}
+
+可以证明对半填充Hubbard模型\eqref{eq:half-filling-hubbard}，我们有以下离散Hubbard-Stratonovich变换
+\begin{equation}
+    \ee^{-\Delta \tau U \sum_{\vb*{i}} (n_{\vb*{i} \uparrow} - 1/2) (n_{\vb*{j} \downarrow} - 1/2)} \simeq \text{const} \times \sum_{s_1, s_2, \ldots, s_n = \pm 1} \ee^{\alpha \sum_{\vb*{i}} s_{\vb*{i}} ({n}_{\vb*{i} \uparrow} - {n}_{\vb*{i} \downarrow})},
+    \label{eq:trotter}
+\end{equation}
+其中
+\begin{equation}
+    N \Delta \tau = \beta, \quad \cosh(\alpha) = \ee^{\Delta \tau U / 2}.
+\end{equation}
+依据公式
+\begin{equation}
+    \trace \ee^{- c^\dagger_i A_{ij} c_j} \ee^{- c^\dagger_i B_{ij} c_j} \cdots = \det(1 + \ee^{- \vb{A}} \ee^{- \vb{B}} \cdots)
+\end{equation}
+可以积掉费米子自由度，从而配分函数为
+\begin{equation}
+    Z = \sum_{\vb{s}} Z[\vb{s}], \quad Z[\vb{s}] = \det(1 + \prod_{\sigma=\uparrow, \downarrow} \vb{B}_{\vb{s}}^\sigma(\beta, 0) ),
+    \label{eq:dqmc-partition-function}
+\end{equation}
+其中$\vb{s}$表示将不同$\vb*{i}$和$\tau$点上的$s_{\vb*{i}, \tau}$打包得到的考虑了虚时间维度的辅助场构型，而$\vb{s}_\tau$表示固定虚时间点$\tau$，将不同的$\vb*{i}$处的$s_{\vb*{i}, \tau}$打包起来得到的单个虚时间点的辅助场构型，$\vb{B}$矩阵定义为
+\begin{equation}
+    \vb{B}^{\sigma}_{\vb{s}}(\tau) = \ee^{\sigma \alpha \diag {\vb{s}_\tau}} \ee^{- \Delta \tau \vb{T}}, \quad \mathbf{B}^\sigma_{\mathbf{s}}\left(\tau_{2}, \tau_{1}\right)=\prod_{n=n_{1}+1}^{n_{2}} \vb{B}^{\sigma}_{\vb{s}}(\tau), 
+\end{equation}
+其中$\vb{T}$矩阵的两个指标取遍所有格点，$\vb{T}$代表单种自旋的电子的紧束缚模型的一次量子化哈密顿量。
+连乘运算$\tau$较大的$\vb{B}$矩阵排在左边。
+根据\eqref{eq:trotter}，还可以计算出$\vb{s}$给定后的单粒子等时格林函数
+\begin{equation}
+    \vb{G}^\sigma_{\vb*{i} \vb*{j}}(\tau) = \expval*{c_{\vb*{i} \sigma} c^\dagger_{\vb*{j} \sigma}}_\tau = \left(1+\mathbf{B}^\sigma_{\mathbf{s}}(\tau, 0) \mathbf{B}^\sigma_{\mathbf{s}}(\beta, \tau)\right)^{-1}_{\vb*{i}, \vb*{j}}.
+    \label{eq:green-function}
+\end{equation}
+由于\eqref{eq:trotter}右边的费米子部分是二次型的，在$\vb{s}$给定时，费米子的Wick定理成立，从而，$\vb{s}$给定时，任意复杂的关于电子的可观测量均可通过单粒子格林函数的多项式给出，于是我们对$\vb{s}$做蒙特卡洛采样即可测定任何和电子有关的物理量。
+
+\begin{figure}
+    \centering
+    \includegraphics[width = 0.7\textwidth]{../hubbard-report/naive-dqmc.pdf}
+    \caption{Hubbard模型的最朴素的DQMC的更新方式}
+    \label{fig:naive-dqmc}
+\end{figure}
+
+至此我们原则上已经可以做DQMC模拟了：如\prettyref{fig:naive-dqmc}所示，蒙特卡洛程序的内部状态就是$\vb{s}$，更新方式为对$\vb{s}$中的全部自由度——不同$\vb*{i}$，不同$\tau$的$s_{\vb*{i}, \tau}$——做Metropolis翻转，翻转前后的$\vb{s}$的权重由\eqref{eq:dqmc-partition-function}给出，两者的商代入\eqref{eq:metropolis-update}就是接受率。
+这样即可正确地对$\vb{s}$的概率分布做采样。要计算电子的物理量的期望值时，使用\eqref{eq:green-function}即可。
+例如，双占据的期望值由
+\begin{equation}
+    \expval*{n_{\vb*{i} \uparrow} n_{\vb*{i} \downarrow}}_{\vb{s}} = (1 - \expval*{c_{\vb*{i} \uparrow} c^\dagger_{\vb*{i} \uparrow}}_{\vb{s}})  (1 - \expval*{c_{\vb*{i} \downarrow} c^\dagger_{\vb*{i} \downarrow}}_{\vb{s}})
+\end{equation}
+给出。
+
+有若干方法可以优化以上算法的效率。可以证明，翻转$s_{\vb*{i}, \tau}$时的接受率可以用$\tau$时刻单粒子格林函数表示，翻转前后的$\tau$时刻格林函数也有简单的关系，相邻虚时间点的格林函数也可以用$\vb{B}$矩阵联系起来。
+因此，费时费力的\eqref{eq:dqmc-partition-function}和\eqref{eq:green-function}可以不必总是进行：\eqref{eq:dqmc-partition-function}实际上从来不需要真的被调用，因为它的作用无非是代入\eqref{eq:metropolis-update}算接受率，而接受率可以用格林函数和不需要求行列式和矩阵连乘的公式得到。
+\eqref{eq:green-function}理论上也从来不需要被调用，因为只要在初始化时计算一次格林函数，之后格林函数可以自己更新自己，但为了避免数值误差指数积累，还是需要隔一段时间重新用\eqref{eq:green-function}计算格林函数。
+通过解析计算，可以得到和\eqref{eq:green-function}等价但是不需要算矩阵逆的公式，可以大大加快计算。
+$\vb{B}$矩阵的构造也有技巧：$\vb{T}$矩阵在计算中从来不改变，从而$\ee^{- \Delta \tau \vb{T}}$可以预先算好；$\diag \vb{s}_\tau$是对角矩阵，计算它的指数是非常简便的。
+
+\subsection{程序结构}
+
+由于DQMC无论如何还是涉及大量线性代数计算，它同样不适宜在HTML5中完成。我们还是使用Julia语言开发Hubbard模型的DQMC程序。%
+\href{../hubbard-dqmc/lib.jl}{\texttt{hubbard-dqmc/lib.jl}}包含了做二维正方晶格商的Hubbard模型的DQMC需要的全部程序，将它\texttt{include}到一个Julia环境中即可开始工作。
+它能够较为容易地调试和扩展：做DQMC计算时，辅助场构型$\vb{s}$，缓存的$\vb{B}$矩阵等信息被封装在\texttt{HubbardDQMC}结构体中，所有操作——从头开始计算格林函数，计算接受率，做更新等——全部封装在不同的作用在这个结构体上的函数中。
+调试时，可以对一个\texttt{HubbardDQMC}结构体做少量操作，观察其变动是否正确。
+晶格信息被单独存放在\texttt{HubbardDQMC}的\texttt{lattice}成员中，通过定义每个格点的近邻是哪些格点，即可建立新类型的晶格。
+本实验局限于正方晶格，但当然也可以定义三角晶格、六角晶格、Kagome晶格，将它们传入\texttt{HubbardDQMC}结构体中做DQMC模拟。
+
+\href{../hubbard-dqmc/main.jl}{\texttt{hubbard-dqmc/main.jl}}给出了计算不同参数下Hubbard模型的电子动能、双占据和反铁磁序参量的程序。
+修改\href{../hubbard-dqmc/config.jl}{\texttt{hubbard-dqmc/config.jl}}可以修改模拟中使用的参数，其中$\texttt{n\_wrap}$指定过多少个虚时间点要按照定义重新计算格林函数。
+运行它，控制台输出中将会依次出现模拟使用的参数，各个bin的内部平均值，最后几行输出如\prettyref{fig:main-output}所示，会给出binning结果，即各个物理量在bin间的平均值和标准差。%
+\prettyref{fig:hubbard-dqmc-output}给出了\href{../hubbard-dqmc/main.jl}{\texttt{hubbard-dqmc/main.jl}}程序和许霄琰老师的示例程序的比较，表明代码实现无误。
+可以看到，随着$U$增大，单电子动能绝对值缩小，由于动能正比于相邻两个格点之间的跃迁的单粒子格林函数，这说明，随着$U$增大，电子越来越难以在格点之间移动了；双占据会减小，即两个电子出现在一个状态上变得越来越不可能了。
+这两个结论都和前述Hubbard模型在$U$较大时会出现Mott转变是一致的。
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{../hubbard-report/main-result.PNG}
+    \caption{\href{../hubbard-dqmc/main.jl}{\texttt{hubbard-dqmc/main.jl}}的控制台输出}
+    \label{fig:main-output}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\textwidth]{../hubbard-report/T_compare.pdf}
+        \subcaption{}
+    \end{subfigure}
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\textwidth]{../hubbard-report/double_occ_compare.pdf}
+        \subcaption{}
+    \end{subfigure}
+    \caption{$L=4$, $\beta = 4$时的物理量计算值（橙色）和许霄琰老师的程序在同样的参数下的输出值（蓝色）的比较 (a) 平摊到每个电子上的动能 (b) 单个格点上的平均双占据}
+    \label{fig:hubbard-dqmc-output}
+\end{figure}
+
+在晶格做得足够大时，通过格林函数还可以计算不同动量上的电子数分布，从而绘制费米面形状。本实验由于计算资源和时间有限，未能完成此任务。
+文献\cite{varney2009quantum}的图2给出了一个示例，其中可以看出$U$增大导致的费米面模糊。
+
+\section{总结与展望}
+
+本实验讨论了伊辛模型和Hubbard模型的蒙特卡洛模拟的原理，使用HTML5和Julia语言，实现了伊辛模型的Metropolis更新，展示了伊辛模型的相图、不同参数下的自旋构型，并讨论了它们的物理意义，绘制了finite size scaling曲线，实现了Hubbard模型的DQMC模拟，绘制了Hubbard模型的电子动能和双占据曲线，并讨论了它们的物理意义。
 
 \bibliographystyle{plain}
 \bibliography{monte-carlo}
